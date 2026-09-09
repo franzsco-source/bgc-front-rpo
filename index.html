@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal BGC - Reclutamiento</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 40px; background-color: #f0f2f5; }
+    .container { max-width: 650px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    h1 { color: #1a252f; font-size: 24px; margin-bottom: 20px; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+    .form-group { margin-bottom: 18px; }
+    label { display: block; margin-bottom: 6px; font-weight: 600; color: #444; }
+    input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+    button { background-color: #27ae60; color: white; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; margin-top: 10px; }
+    button:hover { background-color: #219150; }
+    .response-box { margin-top: 20px; padding: 15px; border-radius: 6px; display: none; font-size: 14px; }
+    .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Portal BGC - Registro de Candidato</h1>
+    <form id="bgcForm">
+      <div class="form-group">
+        <label for="candidato_id">ID Candidato:</label>
+        <input type="text" id="candidato_id" placeholder="Ej. cnd_web_001" required>
+      </div>
+      <div class="form-group">
+        <label for="nombre">Nombre Completo:</label>
+        <input type="text" id="nombre" placeholder="Ej. Roberto Gómez" required>
+      </div>
+      <div class="form-group">
+        <label for="rfc">RFC:</label>
+        <input type="text" id="rfc" placeholder="Ej. GORX850101XXX" required>
+      </div>
+      <div class="form-group">
+        <label for="cliente_rpo">Cliente RPO:</label>
+        <input type="text" id="cliente_rpo" placeholder="Ej. Corporativo México" required>
+      </div>
+      <div class="form-group">
+        <label for="estatus_global">Estatus Semáforo de Riesgo:</label>
+        <select id="estatus_global">
+          <option value="VERDE">VERDE (Aprobado)</option>
+          <option value="AMARILLO">AMARILLO (Atención)</option>
+          <option value="ROJO">ROJO (Riesgo Alto)</option>
+        </select>
+      </div>
+      <button type="submit">Guardar en AWS DynamoDB</button>
+    </form>
+
+    <div id="responseBox" class="response-box"></div>
+  </div>
+
+  <script>
+    const API_URL = 'https://ub8xapr5ae.execute-api.us-east-2.amazonaws.com/dev/candidatos';
+
+    document.getElementById('bgcForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const responseBox = document.getElementById('responseBox');
+      responseBox.style.display = 'none';
+
+      const payload = {
+        candidato_id: document.getElementById('candidato_id').value,
+        cliente_rpo: document.getElementById('cliente_rpo').value,
+        estatus_global: document.getElementById('estatus_global').value,
+        datos_personales: {
+          nombre: document.getElementById('nombre').value,
+          rfc: document.getElementById('rfc').value
+        }
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          responseBox.className = 'response-box success';
+          responseBox.innerText = '¡Registro Exitoso! Guardado en DynamoDB: ' + JSON.stringify(data);
+          document.getElementById('bgcForm').reset();
+        } else {
+          throw new Error(data.error || 'Error al procesar solicitud');
+        }
+      } catch (err) {
+        responseBox.className = 'response-box error';
+        responseBox.innerText = 'Error de conexión: ' + err.message;
+      }
+      responseBox.style.display = 'block';
+    });
+  </script>
+</body>
+</html>
