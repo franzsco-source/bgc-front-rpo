@@ -6,9 +6,38 @@
   <title>BGC Verification - Portal Candidato</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- TensorFlow.js y BlazeFace para Detección Real de Rostros -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface@0.0.7/dist/blazeface.min.js"></script>
+  
+  <style>
+    /* Máscaras perfectas para enfocar (Óvalo y Rectángulo) */
+    .mask-overlay {
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85);
+    }
+    .oval-shape {
+      border-radius: 50%; /* Genera un óvalo perfecto */
+    }
+    .id-shape {
+      border-radius: 1.5rem;
+    }
+    
+    /* Animación del escáner láser */
+    @keyframes scan-vertical {
+      0% { top: 0%; opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { top: 100%; opacity: 0; }
+    }
+    .laser-line {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: currentColor;
+      box-shadow: 0 0 15px currentColor;
+      animation: scan-vertical 2s linear infinite;
+    }
+  </style>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
 
@@ -17,52 +46,29 @@
     <div class="max-w-md mx-auto flex items-center justify-between">
       <div class="flex items-center gap-2">
         <div class="bg-blue-600 text-white font-black px-2 py-1 rounded text-sm tracking-wider">BGC</div>
-        <span class="font-bold text-sm tracking-wide">Portal de Validación</span>
+        <span class="font-bold text-sm tracking-wide">Portal Candidato</span>
       </div>
-      <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1" id="aiStatus">
-        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" id="aiDot"></span> <span id="aiText">Cargando IA...</span>
+      <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" id="aiDot"></span> 
+        <span id="aiText">Cargando IA...</span>
       </span>
     </div>
   </header>
 
   <main class="max-w-md mx-auto w-full p-4 space-y-5 flex-1">
-
-    <!-- Tarjeta de Bienvenida -->
     <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-2">
       <div class="flex items-center gap-2 text-blue-600 text-xs font-bold uppercase tracking-wider">
-        <i data-lucide="user-check" class="w-4 h-4"></i> Proceso de Antecedentes BGC
+        <i data-lucide="shield-check" class="w-4 h-4"></i> Validación de Identidad
       </div>
-      <h2 class="text-xl font-extrabold text-slate-900" id="candNombre">Cargando candidato...</h2>
-      <p class="text-xs text-slate-500">Por favor autoriza los permisos y realiza la captura biométrica para completar tu expediente.</p>
-    </div>
-
-    <!-- PASO 1: Consentimiento LFPDPPP -->
-    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
-      <div class="flex items-center gap-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-2">
-        <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs flex items-center justify-center font-black">1</span>
-        <span>Aviso de Privacidad (LFPDPPP)</span>
-      </div>
-      
-      <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 h-28 overflow-y-auto text-[11px] text-slate-600 leading-relaxed space-y-2">
-        <p><strong>AUTORIZACIÓN Y CONSENTIMIENTO EXPRESS:</strong></p>
-        <p>En cumplimiento con la LFPDPPP, autorizo de manera libre e informada a <strong>Verification Hub / ManpowerGroup RPO</strong> a realizar la validación de mis antecedentes, validación biométrica facial e identidad oficial.</p>
-      </div>
-
-      <!-- Firma Digital -->
-      <div>
-        <label class="block text-xs font-bold text-slate-700 mb-1">Firma digital con tu dedo:</label>
-        <div class="border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 relative">
-          <canvas id="signaturePad" class="w-full h-24 touch-none rounded-xl cursor-crosshair"></canvas>
-          <button type="button" onclick="clearSignature()" class="absolute top-2 right-2 text-[10px] bg-slate-200 hover:bg-slate-300 px-2 py-1 rounded text-slate-600">Limpiar</button>
-        </div>
-      </div>
+      <h2 class="text-xl font-extrabold text-slate-900" id="candNombre">Cargando...</h2>
+      <p class="text-xs text-slate-500">Realiza las capturas para validar tu identidad con inteligencia artificial.</p>
     </div>
 
     <!-- PASO 2: Captura Biométrica y Documentos -->
     <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
       <div class="flex items-center gap-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-2">
-        <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs flex items-center justify-center font-black">2</span>
-        <span>Captura e Identificación Real</span>
+        <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs flex items-center justify-center font-black">1</span>
+        <span>Capturas e Identificación</span>
       </div>
 
       <!-- INE Frente -->
@@ -73,7 +79,6 @@
         </label>
         <div id="previewIneFrente" class="hidden w-full h-32 bg-slate-100 rounded-xl overflow-hidden border border-slate-200 relative">
           <img id="imgIneFrente" class="w-full h-full object-cover">
-          <span class="absolute bottom-2 right-2 bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">✓ Validado</span>
         </div>
         <button onclick="startLiveCamera('ine_frente')" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl border border-slate-300 flex items-center justify-center gap-2 transition">
           <i data-lucide="camera" class="w-4 h-4 text-blue-600"></i> Escanear INE Frente
@@ -88,7 +93,6 @@
         </label>
         <div id="previewIneReverso" class="hidden w-full h-32 bg-slate-100 rounded-xl overflow-hidden border border-slate-200 relative">
           <img id="imgIneReverso" class="w-full h-full object-cover">
-          <span class="absolute bottom-2 right-2 bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">✓ Validado</span>
         </div>
         <button onclick="startLiveCamera('ine_reverso')" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl border border-slate-300 flex items-center justify-center gap-2 transition">
           <i data-lucide="camera" class="w-4 h-4 text-blue-600"></i> Escanear INE Reverso
@@ -105,146 +109,107 @@
           <img id="imgSelfie" class="w-full h-full object-cover">
         </div>
         <button onclick="startLiveCamera('selfie')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow flex items-center justify-center gap-2 transition">
-          <i data-lucide="scan-face" class="w-4 h-4"></i> Iniciar Biometría Real
+          <i data-lucide="scan-face" class="w-4 h-4"></i> Iniciar Biometría
         </button>
       </div>
     </div>
 
-    <!-- Botón de Envío -->
-    <button onclick="enviarExpediente()" id="btnEnviar" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3.5 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
-      <i data-lucide="send" class="w-4 h-4"></i> Enviar Candidatura
-    </button>
-
-    <!-- Pantalla de Éxito -->
-    <div id="successCard" class="hidden bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center space-y-3">
-      <div class="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto text-xl font-bold">✓</div>
-      <h3 class="font-bold text-emerald-900 text-lg">¡Validación Completada!</h3>
-      <p class="text-xs text-emerald-700 leading-relaxed">Documentos e identidad biométrica validados y adjuntos a tu expediente.</p>
-    </div>
-
   </main>
 
-  <!-- MODAL CÁMARA CON ANÁLISIS EN TIEMPO REAL -->
+  <!-- MODAL CÁMARA CON INTERFAZ DE ANÁLISIS AVANZADO -->
   <div id="cameraModal" class="fixed inset-0 bg-black z-50 flex flex-col justify-between hidden">
-    <div class="p-4 flex justify-between items-center bg-black/50 text-white z-10 absolute top-0 w-full">
-      <span id="cameraTitle" class="text-xs font-bold tracking-wider uppercase">Analizando...</span>
-      <button onclick="closeCamera()" class="p-1 text-slate-300 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+    <!-- Header -->
+    <div class="absolute top-0 w-full p-4 flex justify-between items-center z-50">
+      <span id="cameraTitle" class="text-xs font-bold tracking-wider uppercase text-white drop-shadow-md">Escáner BGC</span>
+      <button onclick="closeCamera()" class="p-2 bg-black/40 rounded-full text-white backdrop-blur-sm"><i data-lucide="x" class="w-5 h-5"></i></button>
     </div>
 
-    <div class="relative flex-1 flex items-center justify-center overflow-hidden bg-black mt-12">
-      <video id="webcam" autoplay playsinline class="w-full h-full object-cover"></video>
+    <!-- Contenedor de Video y Máscaras -->
+    <div class="relative w-full h-full flex items-center justify-center overflow-hidden">
+      <!-- Video sin deformar ni hacer zoom extraño -->
+      <video id="webcam" autoplay playsinline class="absolute inset-0 w-full h-full object-cover"></video>
       
-      <!-- Guía INE -->
-      <div id="guideIne" class="absolute border-4 border-amber-400 rounded-2xl shadow-[0_0_0_9999px_rgba(0,0,0,0.65)] w-72 h-44 flex flex-col items-center justify-between p-3 pointer-events-none transition-colors duration-200">
-        <span id="labelGuideIne" class="text-[11px] bg-black/70 text-amber-300 px-3 py-1 rounded-full font-bold flex items-center gap-1 transition-colors">
-          <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Buscando credencial...
-        </span>
-      </div>
+      <!-- Contenedor del Visor Estilizado -->
+      <div id="viewfinder" class="relative pointer-events-none transition-all duration-300 border-[3px]">
+        <!-- Máscara exterior oscura -->
+        <div class="absolute inset-0 mask-overlay pointer-events-none" id="overlayShape"></div>
+        
+        <!-- Línea láser de escaneo -->
+        <div class="laser-line text-amber-400" id="scannerLaser"></div>
 
-      <!-- Guía Rostro -->
-      <div id="guideFacial" class="hidden absolute border-4 border-amber-400 rounded-full shadow-[0_0_0_9999px_rgba(0,0,0,0.65)] w-56 h-72 flex flex-col items-center justify-between py-6 pointer-events-none transition-colors duration-200">
-        <span id="labelGuideFacial" class="text-[11px] bg-black/70 text-amber-300 px-3 py-1 rounded-full font-bold flex items-center gap-1 transition-colors">
-          <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Buscando rostro...
-        </span>
+        <!-- Etiqueta de estado flotante -->
+        <div class="absolute -bottom-14 left-0 w-full flex justify-center">
+          <span id="scannerStatus" class="bg-amber-400 text-black text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2 transition-colors">
+            <span class="w-2 h-2 rounded-full bg-black animate-ping"></span> Buscando
+          </span>
+        </div>
       </div>
     </div>
 
-    <div class="p-6 bg-black flex justify-center items-center gap-6 z-10 pb-10">
-      <!-- Botón de Captura (Inicia deshabilitado y opaco) -->
-      <button id="btnCapture" onclick="takeSnapshot()" disabled class="w-16 h-16 rounded-full border-4 border-white bg-slate-500 opacity-50 transition-all shadow-lg flex items-center justify-center pointer-events-none">
-        <div class="w-12 h-12 rounded-full border-2 border-black/20"></div>
+    <!-- Controles Inferiores -->
+    <div class="absolute bottom-0 w-full p-8 flex flex-col items-center gap-4 bg-gradient-to-t from-black via-black/80 to-transparent z-40">
+      <p id="instructionText" class="text-[11px] text-amber-400 font-bold text-center drop-shadow">Encuadra el documento para leer los datos</p>
+      
+      <button id="btnCapture" onclick="takeSnapshot()" disabled class="w-16 h-16 rounded-full border-[3px] border-white/50 bg-white/20 transition-all flex items-center justify-center pointer-events-none">
+        <div class="w-12 h-12 rounded-full bg-white/50" id="btnInner"></div>
       </button>
-      <p id="instructionText" class="absolute bottom-4 text-[10px] text-amber-400 font-bold text-center w-full left-0">Debes enfocar correctamente para habilitar la captura</p>
     </div>
   </div>
 
-  <footer class="text-center py-4 text-[10px] text-slate-400">
-    Powered by Verification Hub &copy; 2026
-  </footer>
-
   <script>
     lucide.createIcons();
-    const urlParams = new URLSearchParams(window.location.search);
-    document.getElementById('candNombre').innerText = `Expediente: ${urlParams.get('id') || 'cnd_test_003'}`;
+    document.getElementById('candNombre').innerText = `Expediente: ${new URLSearchParams(window.location.search).get('id') || 'cnd_test_003'}`;
 
-    // --- CARGA DEL MODELO DE INTELIGENCIA ARTIFICIAL ---
+    // --- CARGA IA ---
     let faceModel = null;
     async function loadAI() {
       try {
         faceModel = await blazeface.load();
         document.getElementById('aiDot').className = "w-1.5 h-1.5 rounded-full bg-emerald-400";
-        document.getElementById('aiText').innerText = "IA Activa";
-      } catch (e) {
-        console.error("Error cargando IA", e);
-        document.getElementById('aiText').innerText = "Error IA (Modo Manual)";
-      }
+        document.getElementById('aiText').innerText = "IA Optimizada";
+      } catch (e) { console.error("Error cargando IA", e); }
     }
-    window.onload = loadAI; // Cargar en segundo plano al abrir la página
+    window.onload = loadAI;
 
-    // --- LÓGICA DE FIRMA ---
-    const canvas = document.getElementById('signaturePad');
-    const ctx = canvas.getContext('2d');
-    let isDrawing = false;
-    function resizeCanvas() {
-      canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
-      ctx.lineWidth = 2; ctx.strokeStyle = '#1e293b'; ctx.lineCap = 'round';
-    }
-    window.addEventListener('resize', resizeCanvas);
-    setTimeout(resizeCanvas, 100);
-    function getPos(e) {
-      const rect = canvas.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      return { x: clientX - rect.left, y: clientY - rect.top };
-    }
-    canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.beginPath(); ctx.moveTo(getPos(e).x, getPos(e).y); });
-    canvas.addEventListener('mousemove', (e) => { if (isDrawing) { ctx.lineTo(getPos(e).x, getPos(e).y); ctx.stroke(); } });
-    canvas.addEventListener('mouseup', () => isDrawing = false);
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; ctx.beginPath(); ctx.moveTo(getPos(e).x, getPos(e).y); });
-    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (isDrawing) { ctx.lineTo(getPos(e).x, getPos(e).y); ctx.stroke(); } });
-    canvas.addEventListener('touchend', () => isDrawing = false);
-    function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
-
-    // --- LÓGICA DE CÁMARA Y DETECCIÓN REAL ---
+    // --- LÓGICA DE CÁMARA Y DETECCIÓN ---
     let currentTarget = null;
     let videoStream = null;
     let detectionLoop = null;
     const videoEl = document.getElementById('webcam');
-
-    // Canvas oculto para analizar frames
     const analyzerCanvas = document.createElement('canvas');
-    const analyzerCtx = analyzerCanvas.getContext('2d');
+    const analyzerCtx = analyzerCanvas.getContext('2d', { willReadFrequently: true });
+    
+    // Variables de Estado (BUSCANDO, LEYENDO, VALIDADO)
+    let detectionStreak = 0;
+    let currentState = 'BUSCANDO'; 
 
     async function startLiveCamera(target) {
       currentTarget = target;
+      detectionStreak = 0;
+      updateUIState('BUSCANDO');
+
       const modal = document.getElementById('cameraModal');
-      const guideIne = document.getElementById('guideIne');
-      const guideFacial = document.getElementById('guideFacial');
-      const title = document.getElementById('cameraTitle');
+      const viewfinder = document.getElementById('viewfinder');
+      const overlayShape = document.getElementById('overlayShape');
 
-      setVisualState(false); // Resetear a estado "buscando" (Amarillo)
-
+      // Configurar forma estilizada según el objetivo
       if (target === 'selfie') {
-        title.innerText = 'Escaneo Facial en Vivo';
-        guideIne.classList.add('hidden'); guideFacial.classList.remove('hidden');
+        viewfinder.className = "relative pointer-events-none transition-all duration-300 border-[4px] w-[280px] h-[380px] rounded-[50%] z-20"; // ÓVALO PERFECTO
+        overlayShape.className = "absolute inset-0 mask-overlay oval-shape pointer-events-none";
       } else {
-        title.innerText = target === 'ine_frente' ? 'Escaneando INE (Frente)' : 'Escaneando INE (Reverso)';
-        guideIne.classList.remove('hidden'); guideFacial.classList.add('hidden');
+        viewfinder.className = "relative pointer-events-none transition-all duration-300 border-[4px] w-[340px] h-[215px] rounded-2xl z-20"; // RECTÁNGULO ID
+        overlayShape.className = "absolute inset-0 mask-overlay id-shape pointer-events-none";
       }
 
       try {
         const facingMode = target === 'selfie' ? 'user' : 'environment';
-        videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facingMode, width: { ideal: 640 } }, audio: false });
+        // Quitamos "ideal width/height" para evitar que el celular cambie de lente/zoom bruscamente
+        videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facingMode }, audio: false });
         videoEl.srcObject = videoStream;
         modal.classList.remove('hidden');
 
-        videoEl.onloadedmetadata = () => {
-          videoEl.play();
-          detectRealTime(); // Iniciar ciclo de inteligencia artificial
-        };
-      } catch (err) {
-        alert('Permiso de cámara denegado.');
-      }
+        videoEl.onloadedmetadata = () => { videoEl.play(); detectRealTime(); };
+      } catch (err) { alert('Permiso de cámara denegado.'); }
     }
 
     function closeCamera() {
@@ -253,35 +218,33 @@
       document.getElementById('cameraModal').classList.add('hidden');
     }
 
-    // NÚCLEO DE VISIÓN POR COMPUTADORA
+    // NÚCLEO DE VISIÓN POR COMPUTADORA MEJORADO
     async function detectRealTime() {
       if (!videoStream || videoEl.readyState !== 4) {
         detectionLoop = requestAnimationFrame(detectRealTime); return;
       }
 
-      let isDetected = false;
+      let isDetectingNow = false;
 
-      // 1. Detección de Rostro (Selfie) y Foto del INE (INE Frente) usando Inteligencia Artificial
-      if ((currentTarget === 'selfie' || currentTarget === 'ine_frente') && faceModel) {
+      // 1. Detección Facial
+      if (currentTarget === 'selfie' && faceModel) {
         try {
           const predictions = await faceModel.estimateFaces(videoEl, false);
-          if (predictions.length > 0) {
-            isDetected = true; // Si hay una cara en cámara (persona o foto del INE), es válido
-          }
+          if (predictions.length > 0) isDetectingNow = true;
         } catch (e) {}
       } 
-      // 2. Detección de Detalles (INE Reverso) analizando contraste/varianza de la imagen
-      else if (currentTarget === 'ine_reverso') {
+      // 2. Detección de INE (Enfoque, Datos y Contraste)
+      else {
         analyzerCanvas.width = videoEl.videoWidth;
         analyzerCanvas.height = videoEl.videoHeight;
         analyzerCtx.drawImage(videoEl, 0, 0, analyzerCanvas.width, analyzerCanvas.height);
         
-        // Extraer el centro de la imagen donde debe estar el INE
-        const imgData = analyzerCtx.getImageData(analyzerCanvas.width * 0.2, analyzerCanvas.height * 0.3, analyzerCanvas.width * 0.6, analyzerCanvas.height * 0.4);
+        // Analizamos solo el centro (donde está el cuadro)
+        const imgData = analyzerCtx.getImageData(analyzerCanvas.width*0.2, analyzerCanvas.height*0.3, analyzerCanvas.width*0.6, analyzerCanvas.height*0.4);
         const data = imgData.data;
-        let brightnessSum = 0;
-        for (let i = 0; i < data.length; i += 4) { brightnessSum += (data[i] + data[i+1] + data[i+2]) / 3; }
-        const mean = brightnessSum / (data.length / 4);
+        let sum = 0;
+        for (let i = 0; i < data.length; i += 4) { sum += (data[i] + data[i+1] + data[i+2]) / 3; }
+        const mean = sum / (data.length / 4);
         
         let variance = 0;
         for (let i = 0; i < data.length; i += 4) {
@@ -290,96 +253,93 @@
         }
         variance = variance / (data.length / 4);
         
-        // Si hay mucho detalle (texto, códigos), la varianza es alta (> 400). Un fondo vacío es bajo.
-        if (variance > 400) isDetected = true;
+        // Varianza alta indica que hay nitidez, texto y datos legibles (no está borroso)
+        if (variance > 900 && mean > 40 && mean < 230) isDetectingNow = true;
       }
 
-      setVisualState(isDetected);
+      // SISTEMA DE RACHAS (Simula la lectura de datos)
+      if (isDetectingNow) {
+        detectionStreak++;
+      } else {
+        // Reducimos poco a poco por si hay un micro parpadeo
+        detectionStreak = Math.max(0, detectionStreak - 2);
+      }
+
+      // Máquina de Estados para UI
+      if (detectionStreak < 10) {
+        if (currentState !== 'BUSCANDO') updateUIState('BUSCANDO');
+      } else if (detectionStreak < 35) { // ~1 segundo de lectura simulada
+        if (currentState !== 'LEYENDO') updateUIState('LEYENDO');
+      } else { // Más de 1.5 seg enfocando bien
+        if (currentState !== 'VALIDADO') updateUIState('VALIDADO');
+      }
       
-      // Continuar analizando en tiempo real
       detectionLoop = requestAnimationFrame(detectRealTime);
     }
 
-    let currentlyDetected = false;
-    function setVisualState(detected) {
-      if (detected === currentlyDetected) return; // Evitar parpadeos cambiando solo cuando el estado cambia
-      currentlyDetected = detected;
+    // ACTUALIZACIÓN DE INTERFAZ ESTÉTICA
+    function updateUIState(state) {
+      currentState = state;
+      const viewfinder = document.getElementById('viewfinder');
+      const status = document.getElementById('scannerStatus');
+      const laser = document.getElementById('scannerLaser');
+      const inst = document.getElementById('instructionText');
+      const btn = document.getElementById('btnCapture');
+      const btnInner = document.getElementById('btnInner');
 
-      const guideIne = document.getElementById('guideIne');
-      const guideFacial = document.getElementById('guideFacial');
-      const labelIne = document.getElementById('labelGuideIne');
-      const labelFacial = document.getElementById('labelGuideFacial');
-      const btnCapture = document.getElementById('btnCapture');
-      const instructionText = document.getElementById('instructionText');
-
-      if (detected) {
-        if (navigator.vibrate) navigator.vibrate(50); // Vibración al detectar
-        const greenBorder = "border-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.8),0_0_0_9999px_rgba(0,0,0,0.65)] bg-emerald-500/10";
-        const greenBadge = "bg-emerald-600 text-white shadow-lg";
-
-        guideIne.className = `absolute border-4 rounded-2xl w-72 h-44 flex flex-col items-center justify-between p-3 pointer-events-none transition-all duration-300 ${greenBorder}`;
-        labelIne.className = `text-[11px] px-3 py-1 rounded-full font-bold flex items-center gap-1 transition-colors ${greenBadge}`;
-        labelIne.innerHTML = `✓ Detectado y Alineado`;
-
-        guideFacial.className = `hidden absolute border-4 rounded-full w-56 h-72 flex flex-col items-center justify-between py-6 pointer-events-none transition-all duration-300 ${greenBorder}`;
-        labelFacial.className = `text-[11px] px-3 py-1 rounded-full font-bold flex items-center gap-1 transition-colors ${greenBadge}`;
-        labelFacial.innerHTML = `✓ Rostro Identificado`;
-
-        btnCapture.disabled = false;
-        btnCapture.className = "w-16 h-16 rounded-full border-4 border-white bg-red-600 active:scale-95 transition shadow-lg flex items-center justify-center cursor-pointer";
-        instructionText.innerText = "¡Listo! Presiona el botón rojo para capturar";
-        instructionText.className = "absolute bottom-4 text-[10px] text-emerald-400 font-bold text-center w-full left-0";
-      } else {
-        const amberBorder = "border-amber-400 shadow-[0_0_0_9999px_rgba(0,0,0,0.65)]";
-        const amberBadge = "bg-black/70 text-amber-300";
-
-        guideIne.className = `absolute border-4 rounded-2xl w-72 h-44 flex flex-col items-center justify-between p-3 pointer-events-none transition-all duration-300 ${amberBorder}`;
-        labelIne.className = `text-[11px] px-3 py-1 rounded-full font-bold flex items-center gap-1 transition-colors ${amberBadge}`;
-        labelIne.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Buscando credencial...`;
-
-        guideFacial.className = `hidden absolute border-4 rounded-full w-56 h-72 flex flex-col items-center justify-between py-6 pointer-events-none transition-all duration-300 ${amberBorder}`;
-        labelFacial.className = `text-[11px] px-3 py-1 rounded-full font-bold flex items-center gap-1 transition-colors ${amberBadge}`;
-        labelFacial.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Buscando rostro...`;
-
-        btnCapture.disabled = true;
-        btnCapture.className = "w-16 h-16 rounded-full border-4 border-white bg-slate-500 opacity-50 transition-all shadow-lg flex items-center justify-center pointer-events-none";
-        instructionText.innerText = "Debes enfocar correctamente para habilitar la captura";
-        instructionText.className = "absolute bottom-4 text-[10px] text-amber-400 font-bold text-center w-full left-0";
+      if (state === 'BUSCANDO') {
+        viewfinder.className = viewfinder.className.replace(/border-\w+-\d+/g, '') + ' border-amber-400';
+        status.className = "bg-amber-400 text-black text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2";
+        status.innerHTML = `<span class="w-2 h-2 rounded-full bg-black animate-ping"></span> ${currentTarget==='selfie' ? 'Ubicando Rostro' : 'Buscando INE'}`;
+        laser.className = "laser-line text-amber-400";
+        inst.innerText = currentTarget==='selfie' ? "Alinea tu rostro en el óvalo" : "Encuadra el documento sin reflejos";
+        inst.className = "text-[11px] text-amber-400 font-bold text-center drop-shadow";
+        btn.disabled = true; btn.className = "w-16 h-16 rounded-full border-[3px] border-white/50 bg-white/20 transition-all flex items-center justify-center pointer-events-none";
+        btnInner.className = "w-12 h-12 rounded-full bg-white/50";
+      } 
+      else if (state === 'LEYENDO') {
+        if (navigator.vibrate) navigator.vibrate(20);
+        viewfinder.className = viewfinder.className.replace(/border-\w+-\d+/g, '') + ' border-cyan-400';
+        status.className = "bg-cyan-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-[0_0_15px_rgba(6,182,212,0.8)] flex items-center gap-2";
+        status.innerHTML = `<i data-lucide="scan" class="w-3 h-3 animate-spin"></i> ${currentTarget==='selfie' ? 'Analizando Biometría' : 'Leyendo Datos...'}`;
+        lucide.createIcons();
+        laser.className = "laser-line text-cyan-400 animate-[scan-vertical_0.8s_linear_infinite]"; // Láser rápido
+        inst.innerText = "Mantén la posición un momento...";
+        inst.className = "text-[11px] text-cyan-300 font-bold text-center drop-shadow animate-pulse";
+      } 
+      else if (state === 'VALIDADO') {
+        if (navigator.vibrate) navigator.vibrate([50, 50, 50]); // Triple vibración de éxito
+        viewfinder.className = viewfinder.className.replace(/border-\w+-\d+/g, '') + ' border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.5)]';
+        status.className = "bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-[0_0_20px_rgba(16,185,129,0.8)] flex items-center gap-2";
+        status.innerHTML = `✓ Datos Capturados`;
+        laser.className = "hidden"; // Ocultamos el láser
+        inst.innerText = "¡Validación exitosa! Captura la fotografía";
+        inst.className = "text-[12px] text-emerald-400 font-bold text-center drop-shadow";
+        
+        // Habilitar botón de disparo (Rojo vibrante)
+        btn.disabled = false; 
+        btn.className = "w-16 h-16 rounded-full border-4 border-white bg-red-600 active:scale-95 transition-all shadow-[0_0_20px_rgba(220,38,38,0.6)] flex items-center justify-center cursor-pointer pointer-events-auto";
+        btnInner.className = "w-12 h-12 rounded-full border-2 border-black/20";
       }
     }
 
     function takeSnapshot() {
-      if (!currentlyDetected) return; // Doble validación por seguridad
+      if (currentState !== 'VALIDADO') return;
 
       const hiddenCanvas = document.createElement('canvas');
       hiddenCanvas.width = videoEl.videoWidth; hiddenCanvas.height = videoEl.videoHeight;
       hiddenCanvas.getContext('2d').drawImage(videoEl, 0, 0);
-      const imageData = hiddenCanvas.toDataURL('image/jpeg');
+      const imageData = hiddenCanvas.toDataURL('image/jpeg', 0.85);
 
-      const targetPreview = document.getElementById(
-        currentTarget === 'ine_frente' ? 'previewIneFrente' : currentTarget === 'ine_reverso' ? 'previewIneReverso' : 'previewSelfie'
-      );
-      const targetImg = document.getElementById(
-        currentTarget === 'ine_frente' ? 'imgIneFrente' : currentTarget === 'ine_reverso' ? 'imgIneReverso' : 'imgSelfie'
-      );
-      const targetStatus = document.getElementById(
-        currentTarget === 'ine_frente' ? 'statusIneFrente' : currentTarget === 'ine_reverso' ? 'statusIneReverso' : 'statusSelfie'
-      );
+      const targetPreview = document.getElementById(currentTarget === 'ine_frente' ? 'previewIneFrente' : currentTarget === 'ine_reverso' ? 'previewIneReverso' : 'previewSelfie');
+      const targetImg = document.getElementById(currentTarget === 'ine_frente' ? 'imgIneFrente' : currentTarget === 'ine_reverso' ? 'imgIneReverso' : 'imgSelfie');
+      const targetStatus = document.getElementById(currentTarget === 'ine_frente' ? 'statusIneFrente' : currentTarget === 'ine_reverso' ? 'statusIneReverso' : 'statusSelfie');
 
       targetImg.src = imageData;
       targetPreview.classList.remove('hidden');
-      targetStatus.innerText = '✓ Verificado con IA';
-      targetStatus.className = 'text-[10px] text-emerald-600 font-bold';
+      targetStatus.innerHTML = '<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">✓ Validado</span>';
 
       closeCamera();
-    }
-
-    function enviarExpediente() {
-      const btn = document.getElementById('btnEnviar');
-      btn.innerHTML = `<span class="animate-pulse">Cifrando y Enviando...</span>`; btn.disabled = true;
-      setTimeout(() => {
-        btn.classList.add('hidden'); document.getElementById('successCard').classList.remove('hidden');
-      }, 1500);
     }
   </script>
 </body>
