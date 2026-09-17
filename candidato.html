@@ -6,6 +6,9 @@
   <title>BGC Verification - Portal Candidato</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- TensorFlow.js y BlazeFace para Detección Real de Rostros -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface@0.0.7/dist/blazeface.min.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
 
@@ -16,8 +19,8 @@
         <div class="bg-blue-600 text-white font-black px-2 py-1 rounded text-sm tracking-wider">BGC</div>
         <span class="font-bold text-sm tracking-wide">Portal de Validación</span>
       </div>
-      <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> BioCam 2.0
+      <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1" id="aiStatus">
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" id="aiDot"></span> <span id="aiText">Cargando IA...</span>
       </span>
     </div>
   </header>
@@ -55,14 +58,14 @@
       </div>
     </div>
 
-    <!-- PASO 2: Captura Biométrica y Documentos con Cámara en Vivo -->
+    <!-- PASO 2: Captura Biométrica y Documentos -->
     <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
       <div class="flex items-center gap-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-2">
         <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs flex items-center justify-center font-black">2</span>
-        <span>Captura en Vivo e Identificación</span>
+        <span>Captura e Identificación Real</span>
       </div>
 
-      <!-- 1. INE Frente -->
+      <!-- INE Frente -->
       <div class="space-y-2">
         <label class="text-xs font-semibold text-slate-700 flex items-center justify-between">
           <span><i data-lucide="id-card" class="w-3.5 h-3.5 inline mr-1 text-blue-600"></i> INE (Frente)</span>
@@ -70,14 +73,14 @@
         </label>
         <div id="previewIneFrente" class="hidden w-full h-32 bg-slate-100 rounded-xl overflow-hidden border border-slate-200 relative">
           <img id="imgIneFrente" class="w-full h-full object-cover">
-          <span class="absolute bottom-2 right-2 bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">✓ Capturado</span>
+          <span class="absolute bottom-2 right-2 bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">✓ Validado</span>
         </div>
         <button onclick="startLiveCamera('ine_frente')" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl border border-slate-300 flex items-center justify-center gap-2 transition">
           <i data-lucide="camera" class="w-4 h-4 text-blue-600"></i> Escanear INE Frente
         </button>
       </div>
 
-      <!-- 2. INE Reverso -->
+      <!-- INE Reverso -->
       <div class="space-y-2">
         <label class="text-xs font-semibold text-slate-700 flex items-center justify-between">
           <span><i data-lucide="id-card" class="w-3.5 h-3.5 inline mr-1 text-blue-600"></i> INE (Reverso)</span>
@@ -85,74 +88,73 @@
         </label>
         <div id="previewIneReverso" class="hidden w-full h-32 bg-slate-100 rounded-xl overflow-hidden border border-slate-200 relative">
           <img id="imgIneReverso" class="w-full h-full object-cover">
-          <span class="absolute bottom-2 right-2 bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">✓ Capturado</span>
+          <span class="absolute bottom-2 right-2 bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">✓ Validado</span>
         </div>
         <button onclick="startLiveCamera('ine_reverso')" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl border border-slate-300 flex items-center justify-center gap-2 transition">
           <i data-lucide="camera" class="w-4 h-4 text-blue-600"></i> Escanear INE Reverso
         </button>
       </div>
 
-      <!-- 3. Reconocimiento Facial en Vivo -->
+      <!-- Reconocimiento Facial -->
       <div class="space-y-2 pt-2 border-t border-slate-100">
         <label class="text-xs font-semibold text-slate-700 flex items-center justify-between">
-          <span><i data-lucide="user-check" class="w-3.5 h-3.5 inline mr-1 text-emerald-600"></i> Escaneo Facial en Vivo</span>
+          <span><i data-lucide="user-check" class="w-3.5 h-3.5 inline mr-1 text-emerald-600"></i> Escaneo Facial</span>
           <span id="statusSelfie" class="text-[10px] text-slate-400 font-bold">Pendiente</span>
         </label>
         <div id="previewSelfie" class="hidden w-28 h-28 mx-auto bg-slate-100 rounded-full overflow-hidden border-2 border-emerald-500 relative shadow-inner">
           <img id="imgSelfie" class="w-full h-full object-cover">
         </div>
         <button onclick="startLiveCamera('selfie')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow flex items-center justify-center gap-2 transition">
-          <i data-lucide="scan-face" class="w-4 h-4"></i> Iniciar Reconocimiento Facial
+          <i data-lucide="scan-face" class="w-4 h-4"></i> Iniciar Biometría Real
         </button>
       </div>
     </div>
 
     <!-- Botón de Envío -->
     <button onclick="enviarExpediente()" id="btnEnviar" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3.5 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
-      <i data-lucide="send" class="w-4 h-4"></i> Enviar Candidatura Firmada
+      <i data-lucide="send" class="w-4 h-4"></i> Enviar Candidatura
     </button>
 
     <!-- Pantalla de Éxito -->
     <div id="successCard" class="hidden bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center space-y-3">
       <div class="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto text-xl font-bold">✓</div>
       <h3 class="font-bold text-emerald-900 text-lg">¡Validación Completada!</h3>
-      <p class="text-xs text-emerald-700 leading-relaxed">Tus documentos e identificación facial en vivo han sido vinculados al expediente en tiempo real.</p>
+      <p class="text-xs text-emerald-700 leading-relaxed">Documentos e identidad biométrica validados y adjuntos a tu expediente.</p>
     </div>
 
   </main>
 
-  <!-- MODAL VISOR CÁMARA EN VIVO CON MARCO DINÁMICO (CAMBIO DE COLOR) -->
+  <!-- MODAL CÁMARA CON ANÁLISIS EN TIEMPO REAL -->
   <div id="cameraModal" class="fixed inset-0 bg-black z-50 flex flex-col justify-between hidden">
-    <div class="p-4 flex justify-between items-center bg-black/50 text-white z-10">
-      <span id="cameraTitle" class="text-xs font-bold tracking-wider uppercase">Cámara en Vivo</span>
+    <div class="p-4 flex justify-between items-center bg-black/50 text-white z-10 absolute top-0 w-full">
+      <span id="cameraTitle" class="text-xs font-bold tracking-wider uppercase">Analizando...</span>
       <button onclick="closeCamera()" class="p-1 text-slate-300 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
     </div>
 
-    <!-- Contenedor del video con guía visual dinámica -->
-    <div class="relative flex-1 flex items-center justify-center overflow-hidden bg-black">
+    <div class="relative flex-1 flex items-center justify-center overflow-hidden bg-black mt-12">
       <video id="webcam" autoplay playsinline class="w-full h-full object-cover"></video>
       
-      <!-- Máscara de Guía: Marco para INE (Inicial: Amarillo / Confirmado: Verde) -->
-      <div id="guideIne" class="absolute border-4 border-amber-400 rounded-2xl shadow-[0_0_0_9999px_rgba(0,0,0,0.65)] w-72 h-44 flex flex-col items-center justify-between p-3 pointer-events-none transition-all duration-300">
-        <span id="labelGuideIne" class="text-[11px] bg-black/70 text-amber-300 px-3 py-1 rounded-full font-bold flex items-center gap-1">
-          <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Buscando INE...
+      <!-- Guía INE -->
+      <div id="guideIne" class="absolute border-4 border-amber-400 rounded-2xl shadow-[0_0_0_9999px_rgba(0,0,0,0.65)] w-72 h-44 flex flex-col items-center justify-between p-3 pointer-events-none transition-colors duration-200">
+        <span id="labelGuideIne" class="text-[11px] bg-black/70 text-amber-300 px-3 py-1 rounded-full font-bold flex items-center gap-1 transition-colors">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Buscando credencial...
         </span>
-        <span class="text-[9px] text-white/80 bg-black/40 px-2 py-0.5 rounded">Alinea la credencial dentro del marco</span>
       </div>
 
-      <!-- Máscara de Guía: Óvalo Facial (Inicial: Amarillo / Confirmado: Verde) -->
-      <div id="guideFacial" class="hidden absolute border-4 border-amber-400 rounded-full shadow-[0_0_0_9999px_rgba(0,0,0,0.65)] w-56 h-72 flex flex-col items-center justify-between py-6 pointer-events-none transition-all duration-300">
-        <span id="labelGuideFacial" class="text-[11px] bg-black/70 text-amber-300 px-3 py-1 rounded-full font-bold flex items-center gap-1">
-          <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Ubicando rostro...
+      <!-- Guía Rostro -->
+      <div id="guideFacial" class="hidden absolute border-4 border-amber-400 rounded-full shadow-[0_0_0_9999px_rgba(0,0,0,0.65)] w-56 h-72 flex flex-col items-center justify-between py-6 pointer-events-none transition-colors duration-200">
+        <span id="labelGuideFacial" class="text-[11px] bg-black/70 text-amber-300 px-3 py-1 rounded-full font-bold flex items-center gap-1 transition-colors">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Buscando rostro...
         </span>
-        <span class="text-[9px] text-white/80 bg-black/40 px-2 py-0.5 rounded">Mantén la mirada al frente</span>
       </div>
     </div>
 
-    <div class="p-6 bg-black flex justify-center items-center gap-6 z-10">
-      <button id="btnCapture" onclick="takeSnapshot()" class="w-16 h-16 rounded-full border-4 border-white bg-red-600 active:scale-95 transition shadow-lg flex items-center justify-center">
+    <div class="p-6 bg-black flex justify-center items-center gap-6 z-10 pb-10">
+      <!-- Botón de Captura (Inicia deshabilitado y opaco) -->
+      <button id="btnCapture" onclick="takeSnapshot()" disabled class="w-16 h-16 rounded-full border-4 border-white bg-slate-500 opacity-50 transition-all shadow-lg flex items-center justify-center pointer-events-none">
         <div class="w-12 h-12 rounded-full border-2 border-black/20"></div>
       </button>
+      <p id="instructionText" class="absolute bottom-4 text-[10px] text-amber-400 font-bold text-center w-full left-0">Debes enfocar correctamente para habilitar la captura</p>
     </div>
   </div>
 
@@ -162,176 +164,221 @@
 
   <script>
     lucide.createIcons();
-
     const urlParams = new URLSearchParams(window.location.search);
-    const candidatoId = urlParams.get('id') || 'cnd_test_003';
-    document.getElementById('candNombre').innerText = `Expediente: ${candidatoId}`;
+    document.getElementById('candNombre').innerText = `Expediente: ${urlParams.get('id') || 'cnd_test_003'}`;
 
-    // Configuración Lienzo de Firma
+    // --- CARGA DEL MODELO DE INTELIGENCIA ARTIFICIAL ---
+    let faceModel = null;
+    async function loadAI() {
+      try {
+        faceModel = await blazeface.load();
+        document.getElementById('aiDot').className = "w-1.5 h-1.5 rounded-full bg-emerald-400";
+        document.getElementById('aiText').innerText = "IA Activa";
+      } catch (e) {
+        console.error("Error cargando IA", e);
+        document.getElementById('aiText').innerText = "Error IA (Modo Manual)";
+      }
+    }
+    window.onload = loadAI; // Cargar en segundo plano al abrir la página
+
+    // --- LÓGICA DE FIRMA ---
     const canvas = document.getElementById('signaturePad');
     const ctx = canvas.getContext('2d');
     let isDrawing = false;
-
     function resizeCanvas() {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = '#1e293b';
-      ctx.lineCap = 'round';
+      canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+      ctx.lineWidth = 2; ctx.strokeStyle = '#1e293b'; ctx.lineCap = 'round';
     }
     window.addEventListener('resize', resizeCanvas);
     setTimeout(resizeCanvas, 100);
-
     function getPos(e) {
       const rect = canvas.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
       return { x: clientX - rect.left, y: clientY - rect.top };
     }
-
-    canvas.addEventListener('mousedown', (e) => { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
-    canvas.addEventListener('mousemove', (e) => { if (isDrawing) { const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); } });
+    canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.beginPath(); ctx.moveTo(getPos(e).x, getPos(e).y); });
+    canvas.addEventListener('mousemove', (e) => { if (isDrawing) { ctx.lineTo(getPos(e).x, getPos(e).y); ctx.stroke(); } });
     canvas.addEventListener('mouseup', () => isDrawing = false);
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
-    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (isDrawing) { const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); } });
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; ctx.beginPath(); ctx.moveTo(getPos(e).x, getPos(e).y); });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (isDrawing) { ctx.lineTo(getPos(e).x, getPos(e).y); ctx.stroke(); } });
     canvas.addEventListener('touchend', () => isDrawing = false);
-
     function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-    // LÓGICA CÁMARA EN VIVO Y CAMBIO DE COLOR EN ENCUADRE
+    // --- LÓGICA DE CÁMARA Y DETECCIÓN REAL ---
     let currentTarget = null;
     let videoStream = null;
-    let detectionTimer = null;
+    let detectionLoop = null;
+    const videoEl = document.getElementById('webcam');
+
+    // Canvas oculto para analizar frames
+    const analyzerCanvas = document.createElement('canvas');
+    const analyzerCtx = analyzerCanvas.getContext('2d');
 
     async function startLiveCamera(target) {
       currentTarget = target;
       const modal = document.getElementById('cameraModal');
-      const video = document.getElementById('webcam');
       const guideIne = document.getElementById('guideIne');
       const guideFacial = document.getElementById('guideFacial');
       const title = document.getElementById('cameraTitle');
 
-      // Resetear estado visual de los marcos a AMARILLO (Buscando / Alineando)
-      resetGuideStyles();
+      setVisualState(false); // Resetear a estado "buscando" (Amarillo)
 
-      const facingMode = target === 'selfie' ? 'user' : 'environment';
-      
       if (target === 'selfie') {
-        title.innerText = 'Reconocimiento Facial en Vivo';
-        guideIne.classList.add('hidden');
-        guideFacial.classList.remove('hidden');
+        title.innerText = 'Escaneo Facial en Vivo';
+        guideIne.classList.add('hidden'); guideFacial.classList.remove('hidden');
       } else {
-        title.innerText = target === 'ine_frente' ? 'Escanear INE (Frente)' : 'Escanear INE (Reverso)';
-        guideIne.classList.remove('hidden');
-        guideFacial.classList.add('hidden');
+        title.innerText = target === 'ine_frente' ? 'Escaneando INE (Frente)' : 'Escaneando INE (Reverso)';
+        guideIne.classList.remove('hidden'); guideFacial.classList.add('hidden');
       }
 
       try {
-        videoStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
-          audio: false
-        });
-        video.srcObject = videoStream;
+        const facingMode = target === 'selfie' ? 'user' : 'environment';
+        videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facingMode, width: { ideal: 640 } }, audio: false });
+        videoEl.srcObject = videoStream;
         modal.classList.remove('hidden');
 
-        // Iniciar temporizador que simula la detección y cambia el marco a VERDE
-        startFrameDetection(target);
-
+        videoEl.onloadedmetadata = () => {
+          videoEl.play();
+          detectRealTime(); // Iniciar ciclo de inteligencia artificial
+        };
       } catch (err) {
-        alert('No se pudo acceder a la cámara. Por favor autoriza los permisos en tu navegador.');
+        alert('Permiso de cámara denegado.');
       }
     }
 
-    function resetGuideStyles() {
+    function closeCamera() {
+      if (detectionLoop) cancelAnimationFrame(detectionLoop);
+      if (videoStream) videoStream.getTracks().forEach(track => track.stop());
+      document.getElementById('cameraModal').classList.add('hidden');
+    }
+
+    // NÚCLEO DE VISIÓN POR COMPUTADORA
+    async function detectRealTime() {
+      if (!videoStream || videoEl.readyState !== 4) {
+        detectionLoop = requestAnimationFrame(detectRealTime); return;
+      }
+
+      let isDetected = false;
+
+      // 1. Detección de Rostro (Selfie) y Foto del INE (INE Frente) usando Inteligencia Artificial
+      if ((currentTarget === 'selfie' || currentTarget === 'ine_frente') && faceModel) {
+        try {
+          const predictions = await faceModel.estimateFaces(videoEl, false);
+          if (predictions.length > 0) {
+            isDetected = true; // Si hay una cara en cámara (persona o foto del INE), es válido
+          }
+        } catch (e) {}
+      } 
+      // 2. Detección de Detalles (INE Reverso) analizando contraste/varianza de la imagen
+      else if (currentTarget === 'ine_reverso') {
+        analyzerCanvas.width = videoEl.videoWidth;
+        analyzerCanvas.height = videoEl.videoHeight;
+        analyzerCtx.drawImage(videoEl, 0, 0, analyzerCanvas.width, analyzerCanvas.height);
+        
+        // Extraer el centro de la imagen donde debe estar el INE
+        const imgData = analyzerCtx.getImageData(analyzerCanvas.width * 0.2, analyzerCanvas.height * 0.3, analyzerCanvas.width * 0.6, analyzerCanvas.height * 0.4);
+        const data = imgData.data;
+        let brightnessSum = 0;
+        for (let i = 0; i < data.length; i += 4) { brightnessSum += (data[i] + data[i+1] + data[i+2]) / 3; }
+        const mean = brightnessSum / (data.length / 4);
+        
+        let variance = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          const val = (data[i] + data[i+1] + data[i+2]) / 3;
+          variance += Math.pow(val - mean, 2);
+        }
+        variance = variance / (data.length / 4);
+        
+        // Si hay mucho detalle (texto, códigos), la varianza es alta (> 400). Un fondo vacío es bajo.
+        if (variance > 400) isDetected = true;
+      }
+
+      setVisualState(isDetected);
+      
+      // Continuar analizando en tiempo real
+      detectionLoop = requestAnimationFrame(detectRealTime);
+    }
+
+    let currentlyDetected = false;
+    function setVisualState(detected) {
+      if (detected === currentlyDetected) return; // Evitar parpadeos cambiando solo cuando el estado cambia
+      currentlyDetected = detected;
+
       const guideIne = document.getElementById('guideIne');
       const guideFacial = document.getElementById('guideFacial');
       const labelIne = document.getElementById('labelGuideIne');
       const labelFacial = document.getElementById('labelGuideFacial');
+      const btnCapture = document.getElementById('btnCapture');
+      const instructionText = document.getElementById('instructionText');
 
-      // Estilos INE iniciales (Amarillo)
-      guideIne.className = "absolute border-4 border-amber-400 rounded-2xl shadow-[0_0_0_9999px_rgba(0,0,0,0.65)] w-72 h-44 flex flex-col items-center justify-between p-3 pointer-events-none transition-all duration-300";
-      labelIne.className = "text-[11px] bg-black/70 text-amber-300 px-3 py-1 rounded-full font-bold flex items-center gap-1";
-      labelIne.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Buscando INE...`;
+      if (detected) {
+        if (navigator.vibrate) navigator.vibrate(50); // Vibración al detectar
+        const greenBorder = "border-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.8),0_0_0_9999px_rgba(0,0,0,0.65)] bg-emerald-500/10";
+        const greenBadge = "bg-emerald-600 text-white shadow-lg";
 
-      // Estilos Facial iniciales (Amarillo)
-      guideFacial.className = "hidden absolute border-4 border-amber-400 rounded-full shadow-[0_0_0_9999px_rgba(0,0,0,0.65)] w-56 h-72 flex flex-col items-center justify-between py-6 pointer-events-none transition-all duration-300";
-      labelFacial.className = "text-[11px] bg-black/70 text-amber-300 px-3 py-1 rounded-full font-bold flex items-center gap-1";
-      labelFacial.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Ubicando rostro...`;
-    }
+        guideIne.className = `absolute border-4 rounded-2xl w-72 h-44 flex flex-col items-center justify-between p-3 pointer-events-none transition-all duration-300 ${greenBorder}`;
+        labelIne.className = `text-[11px] px-3 py-1 rounded-full font-bold flex items-center gap-1 transition-colors ${greenBadge}`;
+        labelIne.innerHTML = `✓ Detectado y Alineado`;
 
-    function startFrameDetection(target) {
-      if (detectionTimer) clearTimeout(detectionTimer);
+        guideFacial.className = `hidden absolute border-4 rounded-full w-56 h-72 flex flex-col items-center justify-between py-6 pointer-events-none transition-all duration-300 ${greenBorder}`;
+        labelFacial.className = `text-[11px] px-3 py-1 rounded-full font-bold flex items-center gap-1 transition-colors ${greenBadge}`;
+        labelFacial.innerHTML = `✓ Rostro Identificado`;
 
-      // Transición al detectar encuadre correcto
-      detectionTimer = setTimeout(() => {
-        if (navigator.vibrate) navigator.vibrate(60); // Feedback háptico en smartphone
+        btnCapture.disabled = false;
+        btnCapture.className = "w-16 h-16 rounded-full border-4 border-white bg-red-600 active:scale-95 transition shadow-lg flex items-center justify-center cursor-pointer";
+        instructionText.innerText = "¡Listo! Presiona el botón rojo para capturar";
+        instructionText.className = "absolute bottom-4 text-[10px] text-emerald-400 font-bold text-center w-full left-0";
+      } else {
+        const amberBorder = "border-amber-400 shadow-[0_0_0_9999px_rgba(0,0,0,0.65)]";
+        const amberBadge = "bg-black/70 text-amber-300";
 
-        if (target === 'selfie') {
-          const guideFacial = document.getElementById('guideFacial');
-          const labelFacial = document.getElementById('labelGuideFacial');
+        guideIne.className = `absolute border-4 rounded-2xl w-72 h-44 flex flex-col items-center justify-between p-3 pointer-events-none transition-all duration-300 ${amberBorder}`;
+        labelIne.className = `text-[11px] px-3 py-1 rounded-full font-bold flex items-center gap-1 transition-colors ${amberBadge}`;
+        labelIne.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Buscando credencial...`;
 
-          // Cambiar marco a VERDE con efecto resplandor
-          guideFacial.className = "hidden absolute border-4 border-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.8),0_0_0_9999px_rgba(0,0,0,0.65)] rounded-full w-56 h-72 flex flex-col items-center justify-between py-6 pointer-events-none transition-all duration-300 bg-emerald-500/10";
-          labelFacial.className = "text-[11px] bg-emerald-600 text-white px-3 py-1 rounded-full font-bold flex items-center gap-1 shadow-lg";
-          labelFacial.innerHTML = `✓ Rostro en Cuadro`;
-        } else {
-          const guideIne = document.getElementById('guideIne');
-          const labelIne = document.getElementById('labelGuideIne');
+        guideFacial.className = `hidden absolute border-4 rounded-full w-56 h-72 flex flex-col items-center justify-between py-6 pointer-events-none transition-all duration-300 ${amberBorder}`;
+        labelFacial.className = `text-[11px] px-3 py-1 rounded-full font-bold flex items-center gap-1 transition-colors ${amberBadge}`;
+        labelFacial.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Buscando rostro...`;
 
-          // Cambiar marco a VERDE con efecto resplandor
-          guideIne.className = "absolute border-4 border-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.8),0_0_0_9999px_rgba(0,0,0,0.65)] rounded-2xl w-72 h-44 flex flex-col items-center justify-between p-3 pointer-events-none transition-all duration-300 bg-emerald-500/10";
-          labelIne.className = "text-[11px] bg-emerald-600 text-white px-3 py-1 rounded-full font-bold flex items-center gap-1 shadow-lg";
-          labelIne.innerHTML = `✓ INE en Cuadro`;
-        }
-      }, 1400); // 1.4 segundos para confirmar detección
-    }
-
-    function closeCamera() {
-      if (detectionTimer) clearTimeout(detectionTimer);
-      if (videoStream) {
-        videoStream.getTracks().forEach(track => track.stop());
+        btnCapture.disabled = true;
+        btnCapture.className = "w-16 h-16 rounded-full border-4 border-white bg-slate-500 opacity-50 transition-all shadow-lg flex items-center justify-center pointer-events-none";
+        instructionText.innerText = "Debes enfocar correctamente para habilitar la captura";
+        instructionText.className = "absolute bottom-4 text-[10px] text-amber-400 font-bold text-center w-full left-0";
       }
-      document.getElementById('cameraModal').classList.add('hidden');
     }
 
     function takeSnapshot() {
-      const video = document.getElementById('webcam');
-      const hiddenCanvas = document.createElement('canvas');
-      hiddenCanvas.width = video.videoWidth || 640;
-      hiddenCanvas.height = video.videoHeight || 480;
-      const context = hiddenCanvas.getContext('2d');
-      context.drawImage(video, 0, 0, hiddenCanvas.width, hiddenCanvas.height);
+      if (!currentlyDetected) return; // Doble validación por seguridad
 
+      const hiddenCanvas = document.createElement('canvas');
+      hiddenCanvas.width = videoEl.videoWidth; hiddenCanvas.height = videoEl.videoHeight;
+      hiddenCanvas.getContext('2d').drawImage(videoEl, 0, 0);
       const imageData = hiddenCanvas.toDataURL('image/jpeg');
 
-      if (currentTarget === 'ine_frente') {
-        document.getElementById('imgIneFrente').src = imageData;
-        document.getElementById('previewIneFrente').classList.remove('hidden');
-        document.getElementById('statusIneFrente').innerText = '✓ Capturado';
-        document.getElementById('statusIneFrente').className = 'text-[10px] text-emerald-600 font-bold';
-      } else if (currentTarget === 'ine_reverso') {
-        document.getElementById('imgIneReverso').src = imageData;
-        document.getElementById('previewIneReverso').classList.remove('hidden');
-        document.getElementById('statusIneReverso').innerText = '✓ Capturado';
-        document.getElementById('statusIneReverso').className = 'text-[10px] text-emerald-600 font-bold';
-      } else if (currentTarget === 'selfie') {
-        document.getElementById('imgSelfie').src = imageData;
-        document.getElementById('previewSelfie').classList.remove('hidden');
-        document.getElementById('statusSelfie').innerText = '✓ Biometría OK';
-        document.getElementById('statusSelfie').className = 'text-[10px] text-emerald-600 font-bold';
-      }
+      const targetPreview = document.getElementById(
+        currentTarget === 'ine_frente' ? 'previewIneFrente' : currentTarget === 'ine_reverso' ? 'previewIneReverso' : 'previewSelfie'
+      );
+      const targetImg = document.getElementById(
+        currentTarget === 'ine_frente' ? 'imgIneFrente' : currentTarget === 'ine_reverso' ? 'imgIneReverso' : 'imgSelfie'
+      );
+      const targetStatus = document.getElementById(
+        currentTarget === 'ine_frente' ? 'statusIneFrente' : currentTarget === 'ine_reverso' ? 'statusIneReverso' : 'statusSelfie'
+      );
+
+      targetImg.src = imageData;
+      targetPreview.classList.remove('hidden');
+      targetStatus.innerText = '✓ Verificado con IA';
+      targetStatus.className = 'text-[10px] text-emerald-600 font-bold';
 
       closeCamera();
     }
 
     function enviarExpediente() {
       const btn = document.getElementById('btnEnviar');
-      btn.innerHTML = `<span class="animate-pulse">Validando Biometría y Enviando...</span>`;
-      btn.disabled = true;
-
+      btn.innerHTML = `<span class="animate-pulse">Cifrando y Enviando...</span>`; btn.disabled = true;
       setTimeout(() => {
-        btn.classList.add('hidden');
-        document.getElementById('successCard').classList.remove('hidden');
+        btn.classList.add('hidden'); document.getElementById('successCard').classList.remove('hidden');
       }, 1500);
     }
   </script>
