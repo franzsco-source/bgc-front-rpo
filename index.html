@@ -4,14 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BGC Platform - Portal del Reclutador</title>
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen">
 
-  <!-- TOP NAV -->
   <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
@@ -26,196 +23,111 @@
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           <span>AWS Serverless Active</span>
         </div>
-        <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center font-bold text-sm">
-          FV
-        </div>
+        <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center font-bold text-sm">FV</div>
       </div>
     </div>
   </header>
 
-  <!-- MAIN CONTAINER -->
   <main class="max-w-7xl mx-auto px-6 py-8">
-
-    <!-- HEADER ACTION BAR -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
       <div>
         <h2 class="text-2xl font-bold text-slate-900">Panel de Control de Evaluaciones</h2>
         <p class="text-sm text-slate-500">Gestión de expedientes, semáforos de riesgo y validación de antecedentes.</p>
       </div>
       <button onclick="toggleModal(true)" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-sm transition">
-        <i data-lucide="user-plus" class="w-4 h-4"></i>
-        Nuevo Candidato
+        <i data-lucide="user-plus" class="w-4 h-4"></i> Nuevo Candidato
       </button>
     </div>
 
-    <!-- KPI METRICS CARDS -->
+    <!-- KPIs -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
       <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
         <div class="flex justify-between items-start">
           <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Candidatos</span>
           <div class="p-2 bg-blue-50 text-blue-600 rounded-lg"><i data-lucide="users" class="w-4 h-4"></i></div>
         </div>
-        <div class="text-2xl font-bold text-slate-900 mt-2" id="kpiTotal">2</div>
-        <span class="text-xs text-slate-500">Registrados en DynamoDB</span>
+        <div class="text-2xl font-bold text-slate-900 mt-2" id="kpiTotal">-</div>
       </div>
-
       <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
         <div class="flex justify-between items-start">
           <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Semáforo Verde</span>
           <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><i data-lucide="check-circle" class="w-4 h-4"></i></div>
         </div>
-        <div class="text-2xl font-bold text-emerald-600 mt-2" id="kpiVerde">2</div>
-        <span class="text-xs text-slate-500">Riesgo Bajo / Aprobado</span>
+        <div class="text-2xl font-bold text-emerald-600 mt-2" id="kpiVerde">-</div>
       </div>
-
       <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
         <div class="flex justify-between items-start">
           <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Semáforo Amarillo</span>
           <div class="p-2 bg-amber-50 text-amber-600 rounded-lg"><i data-lucide="alert-triangle" class="w-4 h-4"></i></div>
         </div>
-        <div class="text-2xl font-bold text-amber-500 mt-2" id="kpiAmarillo">0</div>
-        <span class="text-xs text-slate-500">Atención / Revisión</span>
+        <div class="text-2xl font-bold text-amber-500 mt-2" id="kpiAmarillo">-</div>
       </div>
-
       <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
         <div class="flex justify-between items-start">
           <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Semáforo Rojo</span>
           <div class="p-2 bg-rose-50 text-rose-600 rounded-lg"><i data-lucide="x-circle" class="w-4 h-4"></i></div>
         </div>
-        <div class="text-2xl font-bold text-rose-600 mt-2" id="kpiRojo">0</div>
-        <span class="text-xs text-slate-500">Riesgo Alto</span>
+        <div class="text-2xl font-bold text-rose-600 mt-2" id="kpiRojo">-</div>
       </div>
     </div>
 
-    <!-- CANDIDATES TABLE CARD -->
+    <!-- TABLA -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      
-      <!-- TABLE CONTROLS -->
       <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between gap-4">
         <div class="relative flex-1 max-w-md">
           <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
-          <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Buscar por ID, nombre o cliente RPO..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500">
+          <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Buscar..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500">
         </div>
-        <div class="flex gap-2">
-          <select id="filterStatus" onchange="filterTable()" class="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-600 focus:outline-none focus:border-blue-500">
-            <option value="ALL">Todos los estatus</option>
-            <option value="VERDE">🟢 Solo Verdes</option>
-            <option value="AMARILLO">🟡 Solo Amarillos</option>
-            <option value="ROJO">🔴 Solo Rojos</option>
-          </select>
-        </div>
+        <select id="filterStatus" onchange="filterTable()" class="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-600">
+          <option value="ALL">Todos los estatus</option>
+          <option value="VERDE">🟢 Solo Verdes</option>
+          <option value="AMARILLO">🟡 Solo Amarillos</option>
+          <option value="ROJO">🔴 Solo Rojos</option>
+        </select>
       </div>
-
-      <!-- TABLE BODY -->
       <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse" id="candidatesTable">
+        <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-slate-50 text-slate-500 text-xs font-semibold uppercase tracking-wider border-b border-slate-100">
               <th class="py-4 px-6">ID Candidato</th>
               <th class="py-4 px-6">Candidato / RFC</th>
               <th class="py-4 px-6">Cliente RPO</th>
-              <th class="py-4 px-6 text-center">Desglose (ID / Leg / Lab / Fisc)</th>
+              <th class="py-4 px-6 text-center">Desglose</th>
               <th class="py-4 px-6">Estatus Global</th>
               <th class="py-4 px-6 text-right">Acción</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 text-sm text-slate-700" id="tableBody">
-            <!-- Mock rows to render immediately -->
-            <tr class="hover:bg-slate-50 transition">
-              <td class="py-4 px-6 font-mono text-xs font-bold text-blue-600">cnd_real_002</td>
-              <td class="py-4 px-6">
-                <div class="font-semibold text-slate-900">Ana Martínez</div>
-                <div class="text-xs text-slate-400">MAMA900101XX1</div>
-              </td>
-              <td class="py-4 px-6 font-medium">Empresa Cliente S.A.</td>
-              <td class="py-4 px-6">
-                <div class="flex justify-center gap-2">
-                  <span title="Identidad" class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-                  <span title="Legal" class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-                  <span title="Laboral" class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-                  <span title="Fiscal" class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-                </div>
-              </td>
-              <td class="py-4 px-6">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> VERDE
-                </span>
-              </td>
-              <td class="py-4 px-6 text-right">
-                <button class="text-slate-400 hover:text-blue-600 font-medium text-xs">Ver Expediente</button>
-              </td>
-            </tr>
-            <tr class="hover:bg-slate-50 transition">
-              <td class="py-4 px-6 font-mono text-xs font-bold text-blue-600">cnd_test_001</td>
-              <td class="py-4 px-6">
-                <div class="font-semibold text-slate-900">Juan Pérez Gómez</div>
-                <div class="text-xs text-slate-400">PEGJ900101ABC</div>
-              </td>
-              <td class="py-4 px-6 font-medium">Cliente Demo RPO</td>
-              <td class="py-4 px-6">
-                <div class="flex justify-center gap-2">
-                  <span title="Identidad" class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-                  <span title="Legal" class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-                  <span title="Laboral" class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-                  <span title="Fiscal" class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-                </div>
-              </td>
-              <td class="py-4 px-6">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> VERDE
-                </span>
-              </td>
-              <td class="py-4 px-6 text-right">
-                <button class="text-slate-400 hover:text-blue-600 font-medium text-xs">Ver Expediente</button>
-              </td>
-            </tr>
+            <tr><td colspan="6" class="text-center py-8 text-slate-500 animate-pulse">Cargando datos desde AWS DynamoDB...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </main>
 
-  <!-- MODAL FOR REGISTRATION -->
+  <!-- MODAL -->
   <div id="modalOverlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 relative border border-slate-100">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 relative">
       <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
         <h3 class="text-lg font-bold text-slate-900">Alta de Nuevo Candidato BGC</h3>
-        <button onclick="toggleModal(false)" class="text-slate-400 hover:text-slate-600">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+        <button onclick="toggleModal(false)" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-
       <form id="bgcForm" class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">ID Candidato</label>
-          <input type="text" id="candidato_id" placeholder="Ej. cnd_rpo_105" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre Completo</label>
-          <input type="text" id="nombre" placeholder="Ej. Roberto Gómez" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500">
-        </div>
+        <div><label class="block text-xs font-semibold text-slate-600 uppercase mb-1">ID Candidato</label><input type="text" id="candidato_id" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"></div>
+        <div><label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre Completo</label><input type="text" id="nombre" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"></div>
         <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">RFC</label>
-            <input type="text" id="rfc" placeholder="GORX850101XXX" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Cliente RPO</label>
-            <input type="text" id="cliente_rpo" placeholder="Corporativo México" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500">
-          </div>
+          <div><label class="block text-xs font-semibold text-slate-600 uppercase mb-1">RFC</label><input type="text" id="rfc" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"></div>
+          <div><label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Cliente RPO</label><input type="text" id="cliente_rpo" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"></div>
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Evaluación Semáforo Inicial</label>
-          <select id="estatus_global" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 bg-white">
-            <option value="VERDE">🟢 VERDE (Sin riesgos)</option>
-            <option value="AMARILLO">🟡 AMARILLO (Requiere revisión)</option>
-            <option value="ROJO">🔴 ROJO (Riesgo alto detectado)</option>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Estatus Inicial</label>
+          <select id="estatus_global" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+            <option value="VERDE">🟢 VERDE</option>
+            <option value="AMARILLO">🟡 AMARILLO</option>
+            <option value="ROJO">🔴 ROJO</option>
           </select>
         </div>
-
-        <button type="submit" id="btnSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg shadow-sm transition text-sm">
-          Guardar en AWS DynamoDB
-        </button>
+        <button type="submit" id="btnSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg shadow-sm transition">Guardar</button>
       </form>
     </div>
   </div>
@@ -224,14 +136,38 @@
     lucide.createIcons();
     const API_URL = 'https://ub8xapr5ae.execute-api.us-east-2.amazonaws.com/dev/candidatos';
 
-    function toggleModal(show) {
-      document.getElementById('modalOverlay').classList.toggle('hidden', !show);
+    // Cargar datos al abrir la página
+    document.addEventListener('DOMContentLoaded', cargarCandidatos);
+
+    async function cargarCandidatos() {
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        
+        if (data && data.length > 0) {
+          data.forEach(c => appendRowToTable(c));
+          
+          // Actualizar KPIs
+          document.getElementById('kpiTotal').innerText = data.length;
+          document.getElementById('kpiVerde').innerText = data.filter(c => c.estatus_global === 'VERDE').length;
+          document.getElementById('kpiAmarillo').innerText = data.filter(c => c.estatus_global === 'AMARILLO').length;
+          document.getElementById('kpiRojo').innerText = data.filter(c => c.estatus_global === 'ROJO').length;
+        } else {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-slate-500">Sin candidatos registrados.</td></tr>';
+        }
+      } catch (err) {
+        document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="text-center py-8 text-red-500">Error conectando a la API.</td></tr>';
+      }
     }
+
+    function toggleModal(show) { document.getElementById('modalOverlay').classList.toggle('hidden', !show); }
 
     document.getElementById('bgcForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btnSubmit');
-      btn.innerText = 'Enviando a API Gateway...';
+      btn.innerText = 'Enviando...';
       btn.disabled = true;
 
       const payload = {
@@ -245,26 +181,14 @@
       };
 
       try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
+        const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         if (res.ok) {
-          appendRowToTable(payload);
           document.getElementById('bgcForm').reset();
           toggleModal(false);
-          alert('¡Candidato registrado exitosamente en DynamoDB!');
-        } else {
-          throw new Error('Error en el servicio Lambda');
+          cargarCandidatos(); // Recargar la tabla completa
         }
-      } catch (err) {
-        alert('Error: ' + err.message);
-      } finally {
-        btn.innerText = 'Guardar en AWS DynamoDB';
-        btn.disabled = false;
-      }
+      } catch (err) { alert('Error: ' + err.message); } 
+      finally { btn.innerText = 'Guardar'; btn.disabled = false; }
     });
 
     function appendRowToTable(data) {
@@ -274,7 +198,6 @@
         AMARILLO: 'bg-amber-50 text-amber-700 border-amber-200 bg-amber-500',
         ROJO: 'bg-rose-50 text-rose-700 border-rose-200 bg-rose-500'
       };
-      
       const style = badgeStyles[data.estatus_global] || badgeStyles.VERDE;
       const dotColor = style.split(' ').pop();
       const badgeClass = style.replace(' ' + dotColor, '');
@@ -283,36 +206,19 @@
       tr.className = 'hover:bg-slate-50 transition';
       tr.innerHTML = `
         <td class="py-4 px-6 font-mono text-xs font-bold text-blue-600">${data.candidato_id}</td>
-        <td class="py-4 px-6">
-          <div class="font-semibold text-slate-900">${data.datos_personales.nombre}</div>
-          <div class="text-xs text-slate-400">${data.datos_personales.rfc}</div>
-        </td>
+        <td class="py-4 px-6"><div class="font-semibold text-slate-900">${data.datos_personales?.nombre || 'N/A'}</div><div class="text-xs text-slate-400">${data.datos_personales?.rfc || ''}</div></td>
         <td class="py-4 px-6 font-medium">${data.cliente_rpo}</td>
-        <td class="py-4 px-6">
-          <div class="flex justify-center gap-2">
-            <span title="Identidad" class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-            <span title="Legal" class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-            <span title="Laboral" class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-            <span title="Fiscal" class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-          </div>
-        </td>
-        <td class="py-4 px-6">
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${badgeClass}">
-            <span class="w-1.5 h-1.5 rounded-full ${dotColor}"></span> ${data.estatus_global}
-          </span>
-        </td>
-        <td class="py-4 px-6 text-right">
-          <button class="text-slate-400 hover:text-blue-600 font-medium text-xs">Ver Expediente</button>
-        </td>
+        <td class="py-4 px-6"><div class="flex justify-center gap-2"><span class="w-3 h-3 rounded-full bg-slate-300"></span><span class="w-3 h-3 rounded-full bg-slate-300"></span><span class="w-3 h-3 rounded-full bg-slate-300"></span><span class="w-3 h-3 rounded-full bg-slate-300"></span></div></td>
+        <td class="py-4 px-6"><span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${badgeClass}"><span class="w-1.5 h-1.5 rounded-full ${dotColor}"></span> ${data.estatus_global}</span></td>
+        <td class="py-4 px-6 text-right"><button class="text-slate-400 hover:text-blue-600 font-medium text-xs">Ver Expediente</button></td>
       `;
-      tbody.prepend(tr);
+      tbody.appendChild(tr);
     }
 
     function filterTable() {
       const search = document.getElementById('searchInput').value.toLowerCase();
       const statusFilter = document.getElementById('filterStatus').value;
       const rows = document.querySelectorAll('#tableBody tr');
-
       rows.forEach(row => {
         const text = row.innerText.toLowerCase();
         const matchesSearch = text.includes(search);
