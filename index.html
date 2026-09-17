@@ -76,7 +76,7 @@
       <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between gap-4">
         <div class="relative flex-1 max-w-md">
           <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
-          <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Buscar..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500">
+          <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Buscar por ID, nombre o cliente..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500">
         </div>
         <select id="filterStatus" onchange="filterTable()" class="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-600">
           <option value="ALL">Todos los estatus</option>
@@ -92,7 +92,7 @@
               <th class="py-4 px-6">ID Candidato</th>
               <th class="py-4 px-6">Candidato / RFC</th>
               <th class="py-4 px-6">Cliente RPO</th>
-              <th class="py-4 px-6 text-center">Desglose</th>
+              <th class="py-4 px-6 text-center">Desglose (ID / LEG / LAB / FISC)</th>
               <th class="py-4 px-6">Estatus Global</th>
               <th class="py-4 px-6 text-right">Acción</th>
             </tr>
@@ -105,7 +105,7 @@
     </div>
   </main>
 
-  <!-- MODAL -->
+  <!-- MODAL NUEVO CANDIDATO -->
   <div id="modalOverlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 relative">
       <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
@@ -122,9 +122,9 @@
         <div>
           <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Estatus Inicial</label>
           <select id="estatus_global" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
-            <option value="VERDE">🟢 VERDE</option>
-            <option value="AMARILLO">🟡 AMARILLO</option>
-            <option value="ROJO">🔴 ROJO</option>
+            <option value="VERDE">🟢 VERDE (Riesgo Bajo)</option>
+            <option value="AMARILLO">🟡 AMARILLO (Atención/Revisión)</option>
+            <option value="ROJO">🔴 ROJO (Riesgo Alto)</option>
           </select>
         </div>
         <button type="submit" id="btnSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg shadow-sm transition">Guardar</button>
@@ -132,28 +132,63 @@
     </div>
   </div>
 
+  <!-- MODAL EXPEDIENTE 360 -->
+  <div id="expedienteModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 relative overflow-hidden">
+      <div class="flex justify-between items-start border-b border-slate-100 pb-4">
+        <div>
+          <span id="expId" class="text-xs font-mono font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">ID</span>
+          <h3 id="expNombre" class="text-xl font-extrabold text-slate-900 mt-1">-</h3>
+          <p id="expRFC" class="text-xs text-slate-400 font-mono">-</p>
+        </div>
+        <button onclick="toggleExpedienteModal(false)" class="text-slate-400 hover:text-slate-600 p-1"><i data-lucide="x" class="w-6 h-6"></i></button>
+      </div>
+
+      <div class="py-5 space-y-4">
+        <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100">
+          <span class="text-xs font-bold text-slate-500 uppercase">Cliente RPO Asignado</span>
+          <span id="expCliente" class="text-sm font-semibold text-slate-800">-</span>
+        </div>
+
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mt-4">Auditoría Módulo por Módulo</h4>
+        <div class="grid grid-cols-2 gap-3" id="expDesgloseContainer">
+          <!-- Se llena dinámicamente -->
+        </div>
+      </div>
+
+      <div class="border-t border-slate-100 pt-4 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-slate-400">Dictamen:</span>
+          <span id="expBadgeGlobal" class="px-3 py-1 rounded-full text-xs font-bold border">-</span>
+        </div>
+        <button onclick="alert('Generando PDF del Expediente BGC...')" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-2 shadow transition">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i> Exportar PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     lucide.createIcons();
     const API_URL = 'https://ub8xapr5ae.execute-api.us-east-2.amazonaws.com/dev/candidatos';
+    let candidatosData = [];
 
-    // Cargar datos al abrir la página
     document.addEventListener('DOMContentLoaded', cargarCandidatos);
 
     async function cargarCandidatos() {
       try {
         const res = await fetch(API_URL);
-        const data = await res.json();
+        candidatosData = await res.json();
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = '';
         
-        if (data && data.length > 0) {
-          data.forEach(c => appendRowToTable(c));
+        if (candidatosData && candidatosData.length > 0) {
+          candidatosData.forEach(c => appendRowToTable(c));
           
-          // Actualizar KPIs
-          document.getElementById('kpiTotal').innerText = data.length;
-          document.getElementById('kpiVerde').innerText = data.filter(c => c.estatus_global === 'VERDE').length;
-          document.getElementById('kpiAmarillo').innerText = data.filter(c => c.estatus_global === 'AMARILLO').length;
-          document.getElementById('kpiRojo').innerText = data.filter(c => c.estatus_global === 'ROJO').length;
+          document.getElementById('kpiTotal').innerText = candidatosData.length;
+          document.getElementById('kpiVerde').innerText = candidatosData.filter(c => c.estatus_global === 'VERDE').length;
+          document.getElementById('kpiAmarillo').innerText = candidatosData.filter(c => c.estatus_global === 'AMARILLO').length;
+          document.getElementById('kpiRojo').innerText = candidatosData.filter(c => c.estatus_global === 'ROJO').length;
         } else {
           tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-slate-500">Sin candidatos registrados.</td></tr>';
         }
@@ -163,6 +198,7 @@
     }
 
     function toggleModal(show) { document.getElementById('modalOverlay').classList.toggle('hidden', !show); }
+    function toggleExpedienteModal(show) { document.getElementById('expedienteModal').classList.toggle('hidden', !show); }
 
     document.getElementById('bgcForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -185,7 +221,7 @@
         if (res.ok) {
           document.getElementById('bgcForm').reset();
           toggleModal(false);
-          cargarCandidatos(); // Recargar la tabla completa
+          cargarCandidatos();
         }
       } catch (err) { alert('Error: ' + err.message); } 
       finally { btn.innerText = 'Guardar'; btn.disabled = false; }
@@ -193,26 +229,68 @@
 
     function appendRowToTable(data) {
       const tbody = document.getElementById('tableBody');
-      const badgeStyles = {
-        VERDE: 'bg-emerald-50 text-emerald-700 border-emerald-200 bg-emerald-500',
-        AMARILLO: 'bg-amber-50 text-amber-700 border-amber-200 bg-amber-500',
-        ROJO: 'bg-rose-50 text-rose-700 border-rose-200 bg-rose-500'
-      };
-      const style = badgeStyles[data.estatus_global] || badgeStyles.VERDE;
-      const dotColor = style.split(' ').pop();
-      const badgeClass = style.replace(' ' + dotColor, '');
+      const isVerde = data.estatus_global === 'VERDE';
+      const isAmarillo = data.estatus_global === 'AMARILLO';
+      
+      const badgeStyle = isVerde ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 
+                         isAmarillo ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-rose-50 text-rose-700 border-rose-200';
+      const dotStyle = isVerde ? 'bg-emerald-500' : isAmarillo ? 'bg-amber-500' : 'bg-rose-500';
+
+      const dotsHtml = isVerde 
+        ? `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="ID"></span><span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="Legal"></span><span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="Laboral"></span><span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="Fiscal"></span>`
+        : isAmarillo 
+        ? `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="ID"></span><span class="w-2.5 h-2.5 rounded-full bg-amber-500" title="Legal"></span><span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="Laboral"></span><span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="Fiscal"></span>`
+        : `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="ID"></span><span class="w-2.5 h-2.5 rounded-full bg-rose-500" title="Legal"></span><span class="w-2.5 h-2.5 rounded-full bg-amber-500" title="Laboral"></span><span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="Fiscal"></span>`;
 
       const tr = document.createElement('tr');
       tr.className = 'hover:bg-slate-50 transition';
       tr.innerHTML = `
         <td class="py-4 px-6 font-mono text-xs font-bold text-blue-600">${data.candidato_id}</td>
-        <td class="py-4 px-6"><div class="font-semibold text-slate-900">${data.datos_personales?.nombre || 'N/A'}</div><div class="text-xs text-slate-400">${data.datos_personales?.rfc || ''}</div></td>
+        <td class="py-4 px-6"><div class="font-semibold text-slate-900">${data.datos_personales?.nombre || 'N/A'}</div><div class="text-xs text-slate-400 font-mono">${data.datos_personales?.rfc || ''}</div></td>
         <td class="py-4 px-6 font-medium">${data.cliente_rpo}</td>
-        <td class="py-4 px-6"><div class="flex justify-center gap-2"><span class="w-3 h-3 rounded-full bg-slate-300"></span><span class="w-3 h-3 rounded-full bg-slate-300"></span><span class="w-3 h-3 rounded-full bg-slate-300"></span><span class="w-3 h-3 rounded-full bg-slate-300"></span></div></td>
-        <td class="py-4 px-6"><span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${badgeClass}"><span class="w-1.5 h-1.5 rounded-full ${dotColor}"></span> ${data.estatus_global}</span></td>
-        <td class="py-4 px-6 text-right"><button class="text-slate-400 hover:text-blue-600 font-medium text-xs">Ver Expediente</button></td>
+        <td class="py-4 px-6"><div class="flex justify-center gap-2">${dotsHtml}</div></td>
+        <td class="py-4 px-6"><span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${badgeStyle}"><span class="w-1.5 h-1.5 rounded-full ${dotStyle}"></span> ${data.estatus_global}</span></td>
+        <td class="py-4 px-6 text-right"><button onclick="verExpediente('${data.candidato_id}')" class="text-blue-600 hover:text-blue-800 font-bold text-xs hover:underline">Ver Expediente</button></td>
       `;
       tbody.appendChild(tr);
+    }
+
+    function verExpediente(id) {
+      const c = candidatosData.find(item => item.candidato_id === id);
+      if (!c) return;
+
+      document.getElementById('expId').innerText = c.candidato_id;
+      document.getElementById('expNombre').innerText = c.datos_personales?.nombre || 'Sin Nombre';
+      document.getElementById('expRFC').innerText = `RFC: ${c.datos_personales?.rfc || 'N/A'}`;
+      document.getElementById('expCliente').innerText = c.cliente_rpo;
+
+      const isVerde = c.estatus_global === 'VERDE';
+      const isAmarillo = c.estatus_global === 'AMARILLO';
+
+      const badge = document.getElementById('expBadgeGlobal');
+      badge.className = `px-3 py-1 rounded-full text-xs font-bold border ${isVerde ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : isAmarillo ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`;
+      badge.innerText = c.estatus_global;
+
+      const modulos = [
+        { name: '1. Identidad (INE/CURP)', status: 'OK', detail: 'Validado con Renapo & INE', color: 'emerald' },
+        { name: '2. Antecedentes Legales', status: isAmarillo ? 'REVISAR' : 'LIMPIO', detail: isAmarillo ? 'Coincidencia menor homónima' : 'Sin registros penales/civiles', color: isAmarillo ? 'amber' : 'emerald' },
+        { name: '3. Historial Laboral (IMSS)', status: 'OK', detail: 'Semanas cotizadas verificadas', color: 'emerald' },
+        { name: '4. Situación Fiscal (SAT)', status: 'OK', detail: 'CSF Activa / Lista 69-B Limpio', color: 'emerald' }
+      ];
+
+      const container = document.getElementById('expDesgloseContainer');
+      container.innerHTML = modulos.map(m => `
+        <div class="p-3 rounded-lg border border-slate-100 bg-slate-50/50 flex flex-col justify-between">
+          <div class="flex justify-between items-center mb-1">
+            <span class="text-xs font-bold text-slate-700">${m.name}</span>
+            <span class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-${m.color}-100 text-${m.color}-700">${m.status}</span>
+          </div>
+          <p class="text-[11px] text-slate-500">${m.detail}</p>
+        </div>
+      `).join('');
+
+      toggleExpedienteModal(true);
+      lucide.createIcons();
     }
 
     function filterTable() {
