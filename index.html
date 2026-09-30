@@ -33,7 +33,7 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
       <div>
         <h2 class="text-2xl font-bold text-slate-900">Panel de Control de Evaluaciones</h2>
-        <p class="text-sm text-slate-500">Gestión de expedientes, semáforos de riesgo y validación de antecedentes.</p>
+        <p class="text-sm text-slate-500">Gestión de expedientes, semáforos de riesgo y envío de solicitudes BGC.</p>
       </div>
       <button onclick="toggleModal(true)" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-sm transition">
         <i data-lucide="user-plus" class="w-4 h-4"></i> Nuevo Candidato
@@ -95,7 +95,7 @@
               <th class="py-4 px-6">Cliente RPO</th>
               <th class="py-4 px-6 text-center">Desglose (ID / LEG / LAB / FISC)</th>
               <th class="py-4 px-6">Estatus Global</th>
-              <th class="py-4 px-6 text-right">Acción</th>
+              <th class="py-4 px-6 text-right">Acciones</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 text-sm text-slate-700" id="tableBody">
@@ -118,17 +118,20 @@
         <div><label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre Completo</label><input type="text" id="nombre" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"></div>
         <div class="grid grid-cols-2 gap-3">
           <div><label class="block text-xs font-semibold text-slate-600 uppercase mb-1">RFC</label><input type="text" id="rfc" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"></div>
+          <div><label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Teléfono WhatsApp</label><input type="tel" id="telefono" placeholder="Ej. 5512345678" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
           <div><label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Cliente RPO</label><input type="text" id="cliente_rpo" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"></div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Estatus Inicial</label>
+            <select id="estatus_global" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+              <option value="VERDE">🟢 VERDE (Riesgo Bajo)</option>
+              <option value="AMARILLO">🟡 AMARILLO (Atención/Revisión)</option>
+              <option value="ROJO">🔴 ROJO (Riesgo Alto)</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Estatus Inicial</label>
-          <select id="estatus_global" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
-            <option value="VERDE">🟢 VERDE (Riesgo Bajo)</option>
-            <option value="AMARILLO">🟡 AMARILLO (Atención/Revisión)</option>
-            <option value="ROJO">🔴 ROJO (Riesgo Alto)</option>
-          </select>
-        </div>
-        <button type="submit" id="btnSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg shadow-sm transition">Guardar</button>
+        <button type="submit" id="btnSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg shadow-sm transition">Guardar Candidato</button>
       </form>
     </div>
   </div>
@@ -137,7 +140,6 @@
   <div id="expedienteModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 relative overflow-hidden flex flex-col max-h-[90vh]">
       
-      <!-- CONTENIDO IMPRIMIBLE DEL PDF -->
       <div id="pdfPrintArea" class="p-4 bg-white overflow-y-auto flex-1">
         
         <div class="flex justify-between items-center border-b-2 border-slate-900 pb-4 mb-4">
@@ -167,18 +169,29 @@
           </div>
         </div>
 
-        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2 mb-3">Resultado de Auditoría por Módulo</h4>
-        
-        <div class="grid grid-cols-2 gap-3 mb-6" id="expDesgloseContainer">
-          <!-- Se llena dinámicamente -->
+        <!-- ACCIONES DE INVITACIÓN RÁPIDA EN MODAL -->
+        <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl mb-6 flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-blue-900 block">Enlace Personalizado del Candidato</span>
+            <span id="expLinkText" class="text-[10px] text-blue-700 font-mono truncate max-w-xs block">https://...</span>
+          </div>
+          <div class="flex gap-2">
+            <button id="btnCopyLink" class="bg-white hover:bg-slate-100 text-blue-700 border border-blue-300 font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiar
+            </button>
+            <a id="btnWhatsappModal" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+              <i data-lucide="message-square" class="w-3.5 h-3.5"></i> WhatsApp
+            </a>
+          </div>
         </div>
 
-        <!-- SECCIÓN DE EVIDENCIA LEGAL Y FIRMA DIGITAL -->
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2 mb-3">Resultado de Auditoría por Módulo</h4>
+        
+        <div class="grid grid-cols-2 gap-3 mb-6" id="expDesgloseContainer"></div>
+
         <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2 mb-3">Evidencia de Consentimiento y Firma Digital (LFPDPPP)</h4>
         
-        <div id="expFirmaContainer" class="p-4 rounded-xl border border-slate-200 bg-slate-50">
-          <!-- Se llena dinámicamente con la firma de DynamoDB -->
-        </div>
+        <div id="expFirmaContainer" class="p-4 rounded-xl border border-slate-200 bg-slate-50"></div>
 
         <div class="mt-8 pt-4 border-t border-slate-200 text-[10px] text-slate-400 flex justify-between items-center">
           <span>Documento generado de manera automatizada vía API Serverless BGC.</span>
@@ -186,7 +199,6 @@
         </div>
       </div>
 
-      <!-- BOTONES DE ACCIÓN -->
       <div class="border-t border-slate-100 pt-4 flex justify-between items-center bg-slate-50 -mx-6 -mb-6 p-4">
         <button onclick="toggleExpedienteModal(false)" class="text-slate-500 hover:text-slate-800 text-xs font-semibold px-4 py-2">
           Cerrar
@@ -202,6 +214,7 @@
   <script>
     lucide.createIcons();
     const API_URL = 'https://ub8xapr5ae.execute-api.us-east-2.amazonaws.com/dev/candidatos';
+    const BASE_CANDIDATE_URL = 'https://main.d3j829o2rjf3ts.amplifyapp.com/candidato.html';
     let candidatosData = [];
 
     document.addEventListener('DOMContentLoaded', cargarCandidatos);
@@ -243,7 +256,8 @@
         estatus_global: document.getElementById('estatus_global').value,
         datos_personales: {
           nombre: document.getElementById('nombre').value,
-          rfc: document.getElementById('rfc').value
+          rfc: document.getElementById('rfc').value,
+          telefono: document.getElementById('telefono').value
         }
       };
 
@@ -255,8 +269,15 @@
           cargarCandidatos();
         }
       } catch (err) { alert('Error: ' + err.message); } 
-      finally { btn.innerText = 'Guardar'; btn.disabled = false; }
+      finally { btn.innerText = 'Guardar Candidato'; btn.disabled = false; }
     });
+
+    function getWhatsappUrl(nombre, telefono, candidatoId) {
+      const link = `${BASE_CANDIDATE_URL}?id=${candidatoId}`;
+      const msg = encodeURIComponent(`Hola ${nombre}, te saludamos del equipo de Selección. Por favor completa tu registro de verificación y firma de consentimiento LFPDPPP ingresando aquí: ${link}`);
+      const cleanPhone = (telefono || '').replace(/\D/g, '');
+      return cleanPhone ? `https://wa.me/52${cleanPhone}?text=${msg}` : `https://wa.me/?text=${msg}`;
+    }
 
     function appendRowToTable(data) {
       const tbody = document.getElementById('tableBody');
@@ -273,17 +294,29 @@
         ? `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="ID"></span><span class="w-2.5 h-2.5 rounded-full bg-amber-500" title="Legal"></span><span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="Laboral"></span><span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="Fiscal"></span>`
         : `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="ID"></span><span class="w-2.5 h-2.5 rounded-full bg-rose-500" title="Legal"></span><span class="w-2.5 h-2.5 rounded-full bg-amber-500" title="Laboral"></span><span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="Fiscal"></span>`;
 
+      const nombre = data.datos_personales?.nombre || 'N/A';
+      const telefono = data.datos_personales?.telefono || '';
+      const waUrl = getWhatsappUrl(nombre, telefono, data.candidato_id);
+
       const tr = document.createElement('tr');
       tr.className = 'hover:bg-slate-50 transition';
       tr.innerHTML = `
         <td class="py-4 px-6 font-mono text-xs font-bold text-blue-600">${data.candidato_id}</td>
-        <td class="py-4 px-6"><div class="font-semibold text-slate-900">${data.datos_personales?.nombre || 'N/A'}</div><div class="text-xs text-slate-400 font-mono">${data.datos_personales?.rfc || ''}</div></td>
+        <td class="py-4 px-6"><div class="font-semibold text-slate-900">${nombre}</div><div class="text-xs text-slate-400 font-mono">${data.datos_personales?.rfc || ''}</div></td>
         <td class="py-4 px-6 font-medium">${data.cliente_rpo}</td>
         <td class="py-4 px-6"><div class="flex justify-center gap-2">${dotsHtml}</div></td>
         <td class="py-4 px-6"><span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${badgeStyle}"><span class="w-1.5 h-1.5 rounded-full ${dotStyle}"></span> ${data.estatus_global}</span></td>
-        <td class="py-4 px-6 text-right"><button onclick="verExpediente('${data.candidato_id}')" class="text-blue-600 hover:text-blue-800 font-bold text-xs hover:underline">Ver Expediente</button></td>
+        <td class="py-4 px-6 text-right">
+          <div class="flex justify-end gap-2 items-center">
+            <a href="${waUrl}" target="_blank" title="Enviar Solicitud por WhatsApp" class="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200 transition">
+              <i data-lucide="message-square" class="w-4 h-4"></i>
+            </a>
+            <button onclick="verExpediente('${data.candidato_id}')" class="text-blue-600 hover:text-blue-800 font-bold text-xs hover:underline">Ver Expediente</button>
+          </div>
+        </td>
       `;
       tbody.appendChild(tr);
+      lucide.createIcons();
     }
 
     function verExpediente(id) {
@@ -295,6 +328,19 @@
       document.getElementById('expRFC').innerText = `RFC: ${c.datos_personales?.rfc || 'N/A'}`;
       document.getElementById('expCliente').innerText = c.cliente_rpo;
       document.getElementById('pdfFecha').innerText = 'Fecha: ' + new Date().toLocaleDateString('es-MX');
+
+      const candLink = `${BASE_CANDIDATE_URL}?id=${c.candidato_id}`;
+      document.getElementById('expLinkText').innerText = candLink;
+      
+      const btnCopy = document.getElementById('btnCopyLink');
+      btnCopy.onclick = () => {
+        navigator.clipboard.writeText(candLink);
+        btnCopy.innerText = '¡Copiado!';
+        setTimeout(() => btnCopy.innerHTML = `<i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiar`, 2000);
+      };
+
+      const waModal = document.getElementById('btnWhatsappModal');
+      waModal.href = getWhatsappUrl(c.datos_personales?.nombre || '', c.datos_personales?.telefono || '', c.candidato_id);
 
       const isVerde = c.estatus_global === 'VERDE';
       const isAmarillo = c.estatus_global === 'AMARILLO';
@@ -321,7 +367,6 @@
         </div>
       `).join('');
 
-      // MOSTRAR FIRMA Y EVIDENCIA LEGAL
       const firmaBox = document.getElementById('expFirmaContainer');
       if (c.consentimiento && c.consentimiento.firmado) {
         const fechaFirma = new Date(c.consentimiento.fecha_firma).toLocaleString('es-MX');
