@@ -9,7 +9,6 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen pb-12">
 
-  <!-- HEADER HEADER MOBILE -->
   <header class="bg-slate-900 text-white p-4 sticky top-0 z-30 shadow-md">
     <div class="max-w-md mx-auto flex justify-between items-center">
       <div class="flex items-center gap-2">
@@ -25,10 +24,8 @@
     </div>
   </header>
 
-  <!-- CONTENEDOR PRINCIPAL MOBILE -->
   <main class="max-w-md mx-auto px-4 mt-6">
 
-    <!-- BARRA DE PROGRESO DE PASOS -->
     <div class="bg-white rounded-xl p-4 shadow-sm mb-5 border border-slate-200">
       <div class="flex justify-between items-center text-xs font-bold text-slate-500 mb-2">
         <span id="stepLabel">Paso 1 de 2: Consentimiento Legal</span>
@@ -39,10 +36,9 @@
       </div>
     </div>
 
-    <!-- TARJETA DEL CANDIDATO DETECTADO -->
     <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5">
       <div class="text-[11px] font-bold uppercase text-blue-600 tracking-wider">Candidato Registrado</div>
-      <h2 id="candNombre" class="text-lg font-bold text-slate-900 mt-0.5">Candidato BGC</h2>
+      <h2 id="candNombre" class="text-lg font-bold text-slate-900 mt-0.5">Cargando candidato...</h2>
       <p id="candMeta" class="text-xs text-slate-500 font-mono">ID: - | RFC: -</p>
     </div>
 
@@ -78,7 +74,6 @@
       <!-- PASO 2: CAPTURA DE INE Y SELFIE -->
       <div id="step2" class="space-y-4 hidden">
         
-        <!-- INE FRENTE -->
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
           <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
             <i data-lucide="credit-card" class="w-4 h-4 text-blue-600"></i> INE - Identificación (Frente)
@@ -93,7 +88,6 @@
           <img id="prevFrente" class="w-full h-32 object-cover rounded-lg hidden border border-slate-200 mt-2">
         </div>
 
-        <!-- INE REVERSO -->
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
           <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
             <i data-lucide="credit-card" class="w-4 h-4 text-blue-600"></i> INE - Identificación (Reverso)
@@ -118,14 +112,13 @@
 
     </form>
 
-    <!-- PANTALLA DE ÉXITO -->
     <div id="stepSuccess" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-md text-center space-y-4 hidden mt-6">
       <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
         <i data-lucide="check" class="w-8 h-8"></i>
       </div>
       <h2 class="text-xl font-black text-slate-900">¡Documentación Enviada!</h2>
       <p class="text-xs text-slate-500 leading-relaxed">
-        Tu consentimiento legal y documentos han sido registrados correctamente en la plataforma AWS. Tu evaluador revisará la información en breve.
+        Tu consentimiento legal y firma han sido registrados de forma segura en AWS DynamoDB.
       </p>
       <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-[11px] font-mono text-slate-600">
         Folio: <span id="folioExito">BGC-DONE</span>
@@ -138,10 +131,10 @@
     lucide.createIcons();
     const API_URL = 'https://ub8xapr5ae.execute-api.us-east-2.amazonaws.com/dev/candidatos';
 
-    // Manejo de Firma Digital Canvas
     const canvas = document.getElementById('signatureCanvas');
     const ctx = canvas.getContext('2d');
     let drawing = false;
+    let hasSignature = false;
 
     function resizeCanvas() {
       const rect = canvas.getBoundingClientRect();
@@ -161,21 +154,25 @@
       return { x: clientX - rect.left, y: clientY - rect.top };
     }
 
-    canvas.addEventListener('mousedown', (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
+    canvas.addEventListener('mousedown', (e) => { drawing = true; hasSignature = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
     canvas.addEventListener('mousemove', (e) => { if (drawing) { const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); } });
     canvas.addEventListener('mouseup', () => drawing = false);
 
-    canvas.addEventListener('touchstart', (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); e.preventDefault(); });
+    canvas.addEventListener('touchstart', (e) => { drawing = true; hasSignature = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); e.preventDefault(); });
     canvas.addEventListener('touchmove', (e) => { if (drawing) { const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); } e.preventDefault(); });
     canvas.addEventListener('touchend', () => drawing = false);
 
     function clearSignature() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      hasSignature = false;
     }
 
-    // Navegación entre pasos
     function goToStep(step) {
       if (step === 2) {
+        if (!hasSignature) {
+          alert('Por favor dibuja tu firma antes de continuar.');
+          return;
+        }
         document.getElementById('step1').classList.add('hidden');
         document.getElementById('step2').classList.remove('hidden');
         document.getElementById('stepLabel').innerText = 'Paso 2 de 2: Identificación Oficial';
@@ -202,7 +199,6 @@
       }
     }
 
-    // Cargar datos de candidato según parámetro de URL (?id=cnd_test_003)
     const urlParams = new URLSearchParams(window.location.search);
     const candId = urlParams.get('id') || 'cnd_test_003';
 
@@ -218,18 +214,45 @@
       } catch (err) { console.error('Error cargando candidato:', err); }
     });
 
-    // Envío final
-    document.getElementById('candidatePortalForm').addEventListener('submit', (e) => {
+    // ENVÍO REAL A LA API GATEWAY
+    document.getElementById('candidatePortalForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btnFinalizar');
-      btn.innerText = 'Enviando Expediente...';
+      btn.innerText = 'Guardando en AWS DynamoDB...';
       btn.disabled = true;
 
-      setTimeout(() => {
-        document.getElementById('step2').classList.add('hidden');
-        document.getElementById('stepSuccess').classList.remove('hidden');
-        document.getElementById('folioExito').innerText = 'BGC-' + Math.floor(Math.random()*899999 + 100000);
-      }, 1200);
+      const firmaBase64 = canvas.toDataURL('image/png');
+
+      const payload = {
+        candidato_id: candId,
+        estatus_portal: 'DOCUMENTOS_ENVIADOS',
+        consentimiento: {
+          firmado: true,
+          fecha_firma: new Date().toISOString(),
+          firma_base64: firmaBase64,
+          acepto_lfpdppp: true
+        }
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          document.getElementById('step2').classList.add('hidden');
+          document.getElementById('stepSuccess').classList.remove('hidden');
+          document.getElementById('folioExito').innerText = 'BGC-' + Math.floor(Math.random()*899999 + 100000);
+        } else {
+          throw new Error('Error guardando en el servidor');
+        }
+      } catch (err) {
+        alert('Error enviando la firma: ' + err.message);
+        btn.innerText = 'Finalizar y Enviar';
+        btn.disabled = false;
+      }
     });
   </script>
 </body>
