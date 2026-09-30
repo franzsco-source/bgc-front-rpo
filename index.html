@@ -6,6 +6,8 @@
   <title>BGC Platform - Portal del Reclutador</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Librería para generación de PDF nativa en JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen">
 
@@ -134,37 +136,62 @@
 
   <!-- MODAL EXPEDIENTE 360 -->
   <div id="expedienteModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 relative overflow-hidden">
-      <div class="flex justify-between items-start border-b border-slate-100 pb-4">
-        <div>
-          <span id="expId" class="text-xs font-mono font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">ID</span>
-          <h3 id="expNombre" class="text-xl font-extrabold text-slate-900 mt-1">-</h3>
-          <p id="expRFC" class="text-xs text-slate-400 font-mono">-</p>
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 relative overflow-hidden flex flex-col max-h-[90vh]">
+      
+      <!-- CONTENIDO IMPRIMIBLE DEL PDF -->
+      <div id="pdfPrintArea" class="p-4 bg-white overflow-y-auto flex-1">
+        
+        <!-- Encabezado corporativo del PDF -->
+        <div class="flex justify-between items-center border-b-2 border-slate-900 pb-4 mb-4">
+          <div>
+            <span class="text-xs font-bold text-blue-600 uppercase tracking-widest">Background Check Report</span>
+            <h2 class="text-2xl font-black text-slate-900">VERIFICATION HUB</h2>
+          </div>
+          <div class="text-right">
+            <span id="pdfFecha" class="text-[11px] text-slate-400 block"></span>
+            <span id="expId" class="text-xs font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">ID</span>
+          </div>
         </div>
-        <button onclick="toggleExpedienteModal(false)" class="text-slate-400 hover:text-slate-600 p-1"><i data-lucide="x" class="w-6 h-6"></i></button>
-      </div>
 
-      <div class="py-5 space-y-4">
-        <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100">
-          <span class="text-xs font-bold text-slate-500 uppercase">Cliente RPO Asignado</span>
-          <span id="expCliente" class="text-sm font-semibold text-slate-800">-</span>
+        <div class="mb-5">
+          <h3 id="expNombre" class="text-xl font-extrabold text-slate-900">-</h3>
+          <p id="expRFC" class="text-xs text-slate-500 font-mono mt-0.5">-</p>
         </div>
 
-        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mt-4">Auditoría Módulo por Módulo</h4>
+        <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200 mb-6">
+          <div>
+            <span class="text-[10px] font-bold text-slate-400 uppercase block">Cliente RPO Asignado</span>
+            <span id="expCliente" class="text-sm font-semibold text-slate-800">-</span>
+          </div>
+          <div>
+            <span class="text-[10px] font-bold text-slate-400 uppercase block">Dictamen Final</span>
+            <span id="expBadgeGlobal" class="inline-block mt-0.5 px-2.5 py-0.5 rounded-full text-xs font-bold border">-</span>
+          </div>
+        </div>
+
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2 mb-3">Resultado de Auditoría por Módulo</h4>
+        
         <div class="grid grid-cols-2 gap-3" id="expDesgloseContainer">
           <!-- Se llena dinámicamente -->
         </div>
+
+        <!-- Pie de página para validez del reporte -->
+        <div class="mt-8 pt-4 border-t border-slate-200 text-[10px] text-slate-400 flex justify-between items-center">
+          <span>Documento generado de manera automatizada vía API Serverless BGC.</span>
+          <span class="font-bold text-slate-500">CONFIDENCIAL</span>
+        </div>
       </div>
 
-      <div class="border-t border-slate-100 pt-4 flex justify-between items-center">
-        <div class="flex items-center gap-2">
-          <span class="text-xs text-slate-400">Dictamen:</span>
-          <span id="expBadgeGlobal" class="px-3 py-1 rounded-full text-xs font-bold border">-</span>
-        </div>
-        <button onclick="alert('Generando PDF del Expediente BGC...')" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-2 shadow transition">
+      <!-- BOTONES DE ACCIÓN (NO SALEN EN EL PDF) -->
+      <div class="border-t border-slate-100 pt-4 flex justify-between items-center bg-slate-50 -mx-6 -mb-6 p-4">
+        <button onclick="toggleExpedienteModal(false)" class="text-slate-500 hover:text-slate-800 text-xs font-semibold px-4 py-2">
+          Cerrar
+        </button>
+        <button onclick="exportarPDF()" id="btnExportPDF" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-lg flex items-center gap-2 shadow transition">
           <i data-lucide="download" class="w-3.5 h-3.5"></i> Exportar PDF
         </button>
       </div>
+
     </div>
   </div>
 
@@ -263,12 +290,13 @@
       document.getElementById('expNombre').innerText = c.datos_personales?.nombre || 'Sin Nombre';
       document.getElementById('expRFC').innerText = `RFC: ${c.datos_personales?.rfc || 'N/A'}`;
       document.getElementById('expCliente').innerText = c.cliente_rpo;
+      document.getElementById('pdfFecha').innerText = 'Fecha: ' + new Date().toLocaleDateString('es-MX');
 
       const isVerde = c.estatus_global === 'VERDE';
       const isAmarillo = c.estatus_global === 'AMARILLO';
 
       const badge = document.getElementById('expBadgeGlobal');
-      badge.className = `px-3 py-1 rounded-full text-xs font-bold border ${isVerde ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : isAmarillo ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`;
+      badge.className = `inline-block px-3 py-0.5 rounded-full text-xs font-bold border ${isVerde ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : isAmarillo ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`;
       badge.innerText = c.estatus_global;
 
       const modulos = [
@@ -280,9 +308,9 @@
 
       const container = document.getElementById('expDesgloseContainer');
       container.innerHTML = modulos.map(m => `
-        <div class="p-3 rounded-lg border border-slate-100 bg-slate-50/50 flex flex-col justify-between">
+        <div class="p-3 rounded-lg border border-slate-200 bg-slate-50 flex flex-col justify-between">
           <div class="flex justify-between items-center mb-1">
-            <span class="text-xs font-bold text-slate-700">${m.name}</span>
+            <span class="text-xs font-bold text-slate-800">${m.name}</span>
             <span class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-${m.color}-100 text-${m.color}-700">${m.status}</span>
           </div>
           <p class="text-[11px] text-slate-500">${m.detail}</p>
@@ -291,6 +319,35 @@
 
       toggleExpedienteModal(true);
       lucide.createIcons();
+    }
+
+    // FUNCIÓN DE GENERACIÓN Y DESCARGA DE PDF
+    function exportarPDF() {
+      const btn = document.getElementById('btnExportPDF');
+      const element = document.getElementById('pdfPrintArea');
+      const nombreCandidato = document.getElementById('expNombre').innerText.replace(/\s+/g, '_');
+      const candidatoId = document.getElementById('expId').innerText;
+
+      btn.innerText = 'Generando PDF...';
+      btn.disabled = true;
+
+      const opt = {
+        margin:       [0.4, 0.4, 0.4, 0.4],
+        filename:     `Reporte_BGC_${candidatoId}_${nombreCandidato}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save().then(() => {
+        btn.innerHTML = `<i data-lucide="download" class="w-3.5 h-3.5"></i> Exportar PDF`;
+        btn.disabled = false;
+        lucide.createIcons();
+      }).catch(err => {
+        alert('Error al generar PDF: ' + err.message);
+        btn.innerText = 'Exportar PDF';
+        btn.disabled = false;
+      });
     }
 
     function filterTable() {
