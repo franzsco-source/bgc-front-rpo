@@ -72,7 +72,7 @@
       </div>
     </div>
 
-    <!-- TABLA MAESTRA DE EVALUACIONES -->
+    <!-- TABLA MAESTRA CON COLUMNAS CLARAS -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between gap-4">
         <div class="relative flex-1 max-w-md">
@@ -95,11 +95,12 @@
               <th class="py-4 px-6">Cliente RPO</th>
               <th class="py-4 px-6 text-center">Desglose (ID / LEG / LAB / FISC)</th>
               <th class="py-4 px-6">Estatus Global</th>
-              <th class="py-4 px-6 text-right">Acciones Directas</th>
+              <th class="py-4 px-6 text-center">Enviar Autorización</th>
+              <th class="py-4 px-6 text-right">Expediente</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 text-sm text-slate-700" id="tableBody">
-            <tr><td colspan="6" class="text-center py-8 text-slate-500 animate-pulse">Cargando datos desde AWS DynamoDB...</td></tr>
+            <tr><td colspan="7" class="text-center py-8 text-slate-500 animate-pulse">Cargando datos desde AWS DynamoDB...</td></tr>
           </tbody>
         </table>
       </div>
@@ -118,18 +119,19 @@
         <div><label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre Completo</label><input type="text" id="nombre" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"></div>
         <div class="grid grid-cols-2 gap-3">
           <div><label class="block text-xs font-semibold text-slate-600 uppercase mb-1">RFC</label><input type="text" id="rfc" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"></div>
-          <div><label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Teléfono WhatsApp</label><input type="tel" id="telefono" placeholder="Ej. 5512345678" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"></div>
+          <div><label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Correo Electrónico</label><input type="email" id="correo" placeholder="candidato@correo.com" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"></div>
         </div>
         <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Teléfono WhatsApp</label><input type="tel" id="telefono" placeholder="Ej. 5512345678" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"></div>
           <div><label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Cliente RPO</label><input type="text" id="cliente_rpo" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"></div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Estatus Inicial</label>
-            <select id="estatus_global" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
-              <option value="VERDE">🟢 VERDE (Riesgo Bajo)</option>
-              <option value="AMARILLO">🟡 AMARILLO (Atención/Revisión)</option>
-              <option value="ROJO">🔴 ROJO (Riesgo Alto)</option>
-            </select>
-          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Estatus Inicial</label>
+          <select id="estatus_global" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+            <option value="VERDE">🟢 VERDE (Riesgo Bajo)</option>
+            <option value="AMARILLO">🟡 AMARILLO (Atención/Revisión)</option>
+            <option value="ROJO">🔴 ROJO (Riesgo Alto)</option>
+          </select>
         </div>
         <button type="submit" id="btnSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg shadow-sm transition">Guardar Candidato</button>
       </form>
@@ -169,7 +171,6 @@
           </div>
         </div>
 
-        <!-- ACCIONES DE INVITACIÓN RÁPIDA EN MODAL -->
         <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl mb-6 flex items-center justify-between gap-3">
           <div class="min-w-0 flex-1">
             <span class="text-[10px] font-bold uppercase text-slate-400 block">Enlace Personalizado para el Candidato</span>
@@ -183,7 +184,7 @@
               <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                 <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
               </svg>
-              <span>Enviar por WhatsApp</span>
+              <span>WhatsApp</span>
             </a>
           </div>
         </div>
@@ -237,10 +238,10 @@
           document.getElementById('kpiAmarillo').innerText = candidatosData.filter(c => c.estatus_global === 'AMARILLO').length;
           document.getElementById('kpiRojo').innerText = candidatosData.filter(c => c.estatus_global === 'ROJO').length;
         } else {
-          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-slate-500">Sin candidatos registrados.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-slate-500">Sin candidatos registrados.</td></tr>';
         }
       } catch (err) {
-        document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="text-center py-8 text-red-500">Error conectando a la API.</td></tr>';
+        document.getElementById('tableBody').innerHTML = '<tr><td colspan="7" class="text-center py-8 text-red-500">Error conectando a la API.</td></tr>';
       }
     }
 
@@ -260,7 +261,8 @@
         datos_personales: {
           nombre: document.getElementById('nombre').value,
           rfc: document.getElementById('rfc').value,
-          telefono: document.getElementById('telefono').value
+          telefono: document.getElementById('telefono').value,
+          correo: document.getElementById('correo').value
         }
       };
 
@@ -282,6 +284,13 @@
       return cleanPhone ? `https://wa.me/52${cleanPhone}?text=${msg}` : `https://wa.me/?text=${msg}`;
     }
 
+    function getEmailUrl(nombre, correo, candidatoId) {
+      const link = `${BASE_CANDIDATE_URL}?id=${candidatoId}`;
+      const subject = encodeURIComponent(`Solicitud de Verificación de Antecedentes (BGC) - ${nombre}`);
+      const body = encodeURIComponent(`Hola ${nombre},\n\nTe saludamos del equipo de Selección. Por favor completa tu registro de verificación y firma de consentimiento LFPDPPP ingresando al siguiente enlace:\n\n${link}\n\nQuedamos a tu disposición.\nSaludos cordiales.`);
+      return `mailto:${correo || ''}?subject=${subject}&body=${body}`;
+    }
+
     function appendRowToTable(data) {
       const tbody = document.getElementById('tableBody');
       const isVerde = data.estatus_global === 'VERDE';
@@ -299,7 +308,10 @@
 
       const nombre = data.datos_personales?.nombre || 'N/A';
       const telefono = data.datos_personales?.telefono || '';
+      const correo = data.datos_personales?.correo || '';
+
       const waUrl = getWhatsappUrl(nombre, telefono, data.candidato_id);
+      const mailUrl = getEmailUrl(nombre, correo, data.candidato_id);
 
       const tr = document.createElement('tr');
       tr.className = 'hover:bg-slate-50 transition';
@@ -309,20 +321,31 @@
         <td class="py-4 px-6 font-medium">${data.cliente_rpo}</td>
         <td class="py-4 px-6"><div class="flex justify-center gap-2">${dotsHtml}</div></td>
         <td class="py-4 px-6"><span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${badgeStyle}"><span class="w-1.5 h-1.5 rounded-full ${dotStyle}"></span> ${data.estatus_global}</span></td>
-        <td class="py-4 px-6 text-right">
-          <div class="flex justify-end items-center gap-2">
-            <!-- BOTÓN DIRECTO Y RECONOCIBLE DE WHATSAPP -->
-            <a href="${waUrl}" target="_blank" title="Enviar solicitud por WhatsApp a ${nombre}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition">
+        
+        <!-- COLUMNA: ENVIAR AUTORIZACIÓN -->
+        <td class="py-4 px-6 text-center">
+          <div class="flex justify-center items-center gap-2">
+            <!-- BOTÓN WHATSAPP -->
+            <a href="${waUrl}" target="_blank" title="Enviar enlace de autorización por WhatsApp" class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition inline-flex items-center gap-1.5">
               <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                 <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
               </svg>
-              <span>Enviar Solicitud</span>
+              <span>WhatsApp</span>
             </a>
-            <!-- BOTÓN SECUNDARIO DE EXPEDIENTE -->
-            <button onclick="verExpediente('${data.candidato_id}')" class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 font-semibold text-xs transition">
-              Ver Expediente
-            </button>
+
+            <!-- BOTÓN CORREO ELECTRÓNICO -->
+            <a href="${mailUrl}" target="_blank" title="Enviar enlace de autorización por Correo" class="px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition inline-flex items-center gap-1.5">
+              <i data-lucide="mail" class="w-3.5 h-3.5"></i>
+              <span>Correo</span>
+            </a>
           </div>
+        </td>
+
+        <!-- COLUMNA: EXPEDIENTE -->
+        <td class="py-4 px-6 text-right">
+          <button onclick="verExpediente('${data.candidato_id}')" class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 font-semibold text-xs transition">
+            Ver Expediente
+          </button>
         </td>
       `;
       tbody.appendChild(tr);
