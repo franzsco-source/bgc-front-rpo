@@ -6,7 +6,6 @@
   <title>BGC Platform - Portal del Reclutador</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Librería para generación de PDF nativa en JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen">
@@ -141,7 +140,6 @@
       <!-- CONTENIDO IMPRIMIBLE DEL PDF -->
       <div id="pdfPrintArea" class="p-4 bg-white overflow-y-auto flex-1">
         
-        <!-- Encabezado corporativo del PDF -->
         <div class="flex justify-between items-center border-b-2 border-slate-900 pb-4 mb-4">
           <div>
             <span class="text-xs font-bold text-blue-600 uppercase tracking-widest">Background Check Report</span>
@@ -171,18 +169,24 @@
 
         <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2 mb-3">Resultado de Auditoría por Módulo</h4>
         
-        <div class="grid grid-cols-2 gap-3" id="expDesgloseContainer">
+        <div class="grid grid-cols-2 gap-3 mb-6" id="expDesgloseContainer">
           <!-- Se llena dinámicamente -->
         </div>
 
-        <!-- Pie de página para validez del reporte -->
+        <!-- SECCIÓN DE EVIDENCIA LEGAL Y FIRMA DIGITAL -->
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2 mb-3">Evidencia de Consentimiento y Firma Digital (LFPDPPP)</h4>
+        
+        <div id="expFirmaContainer" class="p-4 rounded-xl border border-slate-200 bg-slate-50">
+          <!-- Se llena dinámicamente con la firma de DynamoDB -->
+        </div>
+
         <div class="mt-8 pt-4 border-t border-slate-200 text-[10px] text-slate-400 flex justify-between items-center">
           <span>Documento generado de manera automatizada vía API Serverless BGC.</span>
           <span class="font-bold text-slate-500">CONFIDENCIAL</span>
         </div>
       </div>
 
-      <!-- BOTONES DE ACCIÓN (NO SALEN EN EL PDF) -->
+      <!-- BOTONES DE ACCIÓN -->
       <div class="border-t border-slate-100 pt-4 flex justify-between items-center bg-slate-50 -mx-6 -mb-6 p-4">
         <button onclick="toggleExpedienteModal(false)" class="text-slate-500 hover:text-slate-800 text-xs font-semibold px-4 py-2">
           Cerrar
@@ -317,11 +321,40 @@
         </div>
       `).join('');
 
+      // MOSTRAR FIRMA Y EVIDENCIA LEGAL
+      const firmaBox = document.getElementById('expFirmaContainer');
+      if (c.consentimiento && c.consentimiento.firmado) {
+        const fechaFirma = new Date(c.consentimiento.fecha_firma).toLocaleString('es-MX');
+        firmaBox.innerHTML = `
+          <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="space-y-1">
+              <span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                ✓ LFPDPPP Aceptado
+              </span>
+              <p class="text-xs text-slate-600"><strong>Fecha de Firma:</strong> ${fechaFirma}</p>
+              <p class="text-[10px] text-slate-400">Verificado mediante token de consentimiento de portal candidato.</p>
+            </div>
+            <div class="border border-slate-300 rounded-lg p-2 bg-white text-center">
+              <span class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Firma Digital Capturada</span>
+              <img src="${c.consentimiento.firma_base64}" class="max-h-16 mx-auto object-contain">
+            </div>
+          </div>
+        `;
+      } else {
+        firmaBox.innerHTML = `
+          <div class="text-center py-3">
+            <span class="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-200 mb-1">
+              ⌛ Pendiente de Firma por el Candidato
+            </span>
+            <p class="text-xs text-slate-500">El candidato aún no ha completado el formulario LFPDPPP desde su dispositivo móvil.</p>
+          </div>
+        `;
+      }
+
       toggleExpedienteModal(true);
       lucide.createIcons();
     }
 
-    // FUNCIÓN DE GENERACIÓN Y DESCARGA DE PDF
     function exportarPDF() {
       const btn = document.getElementById('btnExportPDF');
       const element = document.getElementById('pdfPrintArea');
