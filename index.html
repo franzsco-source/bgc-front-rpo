@@ -1,4 +1,9 @@
-<!DOCTYPE html>
+<script>
+  // GUARDIÁN DE SEGURIDAD BGC
+  if (!sessionStorage.getItem('bgc_token')) {
+    window.location.href = 'login.html';
+  }
+</script><!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
