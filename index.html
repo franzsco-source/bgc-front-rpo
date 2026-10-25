@@ -6,6 +6,16 @@
 </script><!DOCTYPE html>
 <html lang="es">
 <head>
+  <button onclick="cerrarSesion()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 transition">
+  <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Salir
+</button>
+
+<script>
+  function cerrarSesion() {
+    sessionStorage.clear();
+    window.location.href = 'login.html';
+  }
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BGC Platform - Portal del Reclutador</title>
