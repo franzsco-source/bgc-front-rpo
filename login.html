@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BGC Platform - Acceso Reclutadores</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-900 text-slate-800 font-sans antialiased min-h-screen flex items-center justify-center p-4">
+
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-800">
+    
+    <!-- HEADER MARCA -->
+    <div class="bg-slate-950 p-6 text-center border-b border-slate-800">
+      <div class="bg-blue-600 w-12 h-12 rounded-xl text-white font-black text-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-blue-500/20">
+        BGC
+      </div>
+      <h1 class="text-xl font-extrabold text-white">Verification Hub</h1>
+      <p class="text-xs text-slate-400 mt-1">Acceso Exclusivo para Reclutadores y Auditores</p>
+    </div>
+
+    <!-- FORMULARIO LOGIN -->
+    <div class="p-6 sm:p-8 space-y-5">
+      
+      <div id="alertError" class="hidden bg-rose-50 border border-rose-200 text-rose-700 text-xs p-3 rounded-lg flex items-center gap-2">
+        <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+        <span id="alertErrorText">Credenciales incorrectas.</span>
+      </div>
+
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Usuario / Correo Electrónico</label>
+          <div class="relative">
+            <i data-lucide="user" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+            <input type="text" id="username" required placeholder="reclutador@manpower.com" class="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Contraseña</label>
+          <div class="relative">
+            <i data-lucide="lock" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+            <input type="password" id="password" required placeholder="••••••••" class="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500">
+          </div>
+        </div>
+
+        <button type="submit" id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-md transition flex justify-center items-center gap-2">
+          <span>Ingresar al Sistema</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </form>
+
+      <div class="pt-4 border-t border-slate-100 text-center">
+        <span class="text-[11px] text-slate-400 flex items-center justify-center gap-1">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-500"></i> Protegido con AWS Cognito SSO
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // REGION Y CLIENT ID DE TU USER POOL COGNITO
+    const COGNITO_REGION = 'us-east-2';
+    const CLIENT_ID = 'TU_CLIENT_ID_DE_COGNITO'; // REEMPLAZAR CON TU APP CLIENT ID DE COGNITO
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnLogin');
+      const errorBox = document.getElementById('alertError');
+      const errorText = document.getElementById('alertErrorText');
+
+      errorBox.classList.add('hidden');
+      btn.innerText = 'Autenticando...';
+      btn.disabled = true;
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      const payload = {
+        AuthFlow: "USER_PASSWORD_AUTH",
+        ClientId: CLIENT_ID,
+        AuthParameters: {
+          USERNAME: username,
+          PASSWORD: password
+        }
+      };
+
+      try {
+        const res = await fetch(`https://cognito-idp.${COGNITO_REGION}.amazonaws.com/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-amz-json-1.1',
+            'X-Amz-Target': 'AWSCognitoIdentityProviderService.InitiateAuth'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.AuthenticationResult) {
+          // GUARDAR TOKEN Y DATOS DE SESIÓN EN SESSIONSTORAGE
+          sessionStorage.setItem('bgc_token', data.AuthenticationResult.IdToken);
+          sessionStorage.setItem('bgc_user', username);
+          
+          window.location.href = 'index.html';
+        } else {
+          const msg = data.message || 'Error de autenticación. Verifica tus credenciales.';
+          errorText.innerText = msg;
+          errorBox.classList.remove('hidden');
+        }
+      } catch (err) {
+        errorText.innerText = 'Error de conexión con AWS Cognito.';
+        errorBox.classList.remove('hidden');
+      } finally {
+        btn.innerHTML = `<span>Ingresar al Sistema</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>`;
+        btn.disabled = false;
+        lucide.createIcons();
+      }
+    });
+  </script>
+</body>
+</html>
