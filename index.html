@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BGC Platform - Validación Automatizada de Candidatos & Riesgo RPO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+
+    <!-- Navegación -->
+    <nav class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 text-white font-bold text-xl px-3 py-1.5 rounded-lg shadow-lg">
+                    BGC
+                </div>
+                <span class="font-bold text-xl tracking-tight">Verification Hub</span>
+            </div>
+            
+            <div class="hidden md:flex items-center space-x-8 text-sm font-medium">
+                <a href="#soluciones" class="hover:text-blue-400 transition-colors">Módulos</a>
+                <a href="#beneficios" class="hover:text-blue-400 transition-colors">Beneficios</a>
+                <a href="#cobertura" class="hover:text-blue-400 transition-colors">Cumplimiento LFPDPPP</a>
+                <a href="#contacto" class="hover:text-blue-400 transition-colors">Contacto</a>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <a href="login.html" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl shadow-md transition-all text-sm flex items-center gap-2">
+                    <i class="fas fa-lock"></i> Acceso Clientes
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="gradient-bg text-white py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+            <div>
+                <span class="bg-blue-500/20 text-blue-300 border border-blue-400/30 font-semibold px-4 py-1.5 rounded-full text-xs uppercase tracking-wider inline-block mb-4">
+                    Plataforma B2B de Background Checks
+                </span>
+                <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight mb-6">
+                    Mitiga Riesgos en Contratación con <span class="text-blue-400">Verificación Automatizada</span>
+                </h1>
+                <p class="text-lg text-slate-300 mb-8 leading-relaxed">
+                    Acelera tus procesos de selección en México. Valida antecedentes laborales, legales, fiscales e identidad con firma digital en minutos, garantizando total cumplimiento de la Ley de Protección de Datos.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="#contacto" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-blue-500/25 transition-all text-center">
+                        Solicitar Demo Comercial
+                    </a>
+                    <a href="login.html" class="border border-slate-700 hover:bg-slate-800 text-slate-200 font-semibold px-8 py-4 rounded-xl transition-all text-center flex items-center justify-center gap-2">
+                        <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                    </a>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/80 backdrop-blur-md p-6 rounded-2xl border border-slate-700 shadow-2xl">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-4 mb-4">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></span>
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-300">Monitoreo en Tiempo Real</span>
+                    </div>
+                    <span class="text-xs text-slate-400">Motor AWS Serverless</span>
+                </div>
+                
+                <!-- Mockup de Semáforo -->
+                <div class="space-y-3">
+                    <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/50 flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-id-card text-blue-400 text-xl"></i>
+                            <div>
+                                <p class="text-sm font-semibold">Validación de Identidad</p>
+                                <p class="text-xs text-slate-400">Cotejo directo con INE & RENAPO</p>
+                            </div>
+                        </div>
+                        <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-3 py-1 rounded-full">VALIDADO</span>
+                    </div>
+
+                    <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/50 flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-gavel text-amber-400 text-xl"></i>
+                            <div>
+                                <p class="text-sm font-semibold">Antecedentes Legales</p>
+                                <p class="text-xs text-slate-400">Registros penales, civiles y laborales</p>
+                            </div>
+                        </div>
+                        <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-3 py-1 rounded-full">SIN REGISTROS</span>
+                    </div>
+
+                    <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/50 flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-file-invoice-dollar text-purple-400 text-xl"></i>
+                            <div>
+                                <p class="text-sm font-semibold">Situación Fiscal (SAT)</p>
+                                <p class="text-xs text-slate-400">CSF Activa y Lista 69-B Limpia</p>
+                            </div>
+                        </div>
+                        <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-3 py-1 rounded-full">CONFORME</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Módulos de Validación -->
+    <section id="soluciones" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl font-bold text-slate-900 sm:text-4xl mb-4">4 Módulos Integrados de Verificación</h2>
+            <p class="text-slate-600 max-w-2xl mx-auto">Auditorías integrales en una sola plataforma automatizada.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm card-hover">
+                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-xl font-bold mb-4">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <h3 class="font-bold text-lg mb-2 text-slate-900">Identidad Digital</h3>
+                <p class="text-sm text-slate-600">Verificación de CURP, INE y listas oficiales para confirmar la autenticidad del candidato.</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm card-hover">
+                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-xl font-bold mb-4">
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <h3 class="font-bold text-lg mb-2 text-slate-900">Historial Legal</h3>
+                <p class="text-sm text-slate-600">Revisión de boletines judiciales, demandas laborales y antecedentes normativos.</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm card-hover">
+                <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center text-xl font-bold mb-4">
+                    <i class="fas fa-history"></i>
+                </div>
+                <h3 class="font-bold text-lg mb-2 text-slate-900">Trayectoria IMSS</h3>
+                <p class="text-sm text-slate-600">Validación de semanas cotizadas e historial de patrones reales para detectar omisiones.</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm card-hover">
+                <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center text-xl font-bold mb-4">
+                    <i class="fas fa-file-contract"></i>
+                </div>
+                <h3 class="font-bold text-lg mb-2 text-slate-900">Firma LFPDPPP</h3>
+                <p class="text-sm text-slate-600">Captura de consentimiento informado y firma digital desde dispositivos móviles.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Formulario de Contacto / Cotización -->
+    <section id="contacto" class="bg-slate-900 text-white py-20 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl font-bold mb-4">¿Listo para escalar tus evaluaciones BGC?</h2>
+            <p class="text-slate-400 mb-8">Solicita una demo personalizada o cotiza un paquete de evaluaciones para tu empresa.</p>
+            
+            <form class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-xl grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Nombre Completo</label>
+                    <input type="text" placeholder="Ej. Carlos Mendoza" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Correo Corporativo</label>
+                    <input type="email" placeholder="carlos@empresa.com" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Empresa / Requerimiento Estimado Mensual</label>
+                    <input type="text" placeholder="Ej. Empresa S.A. / 50 expedientes por mes" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div class="sm:col-span-2 mt-4">
+                    <button type="button" onclick="alert('¡Gracias por tu interés! Un consultor comercial se pondrá en contacto contigo a la brevedad.')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all text-sm">
+                        Enviar Solicitud
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 text-slate-500 py-8 text-center text-xs border-t border-slate-800">
+        <p>© 2026 Verification Hub BGC Platform. Todos los derechos reservados. Cumplimiento estricto de la LFPDPPP México.</p>
+    </footer>
+
+</body>
+</html>
