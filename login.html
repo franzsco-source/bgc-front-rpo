@@ -105,7 +105,7 @@
           sessionStorage.setItem('bgc_token', data.AuthenticationResult.IdToken);
           sessionStorage.setItem('bgc_user', username);
           
-          window.location.href = 'index.html';
+          window.location.href = 'dashboard.html';
         } else {
           const msg = data.message || 'Error de autenticación. Verifica tus credenciales.';
           errorText.innerText = msg;
